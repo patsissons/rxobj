@@ -1,0 +1,17 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "noImplicitAny": true
+  },
+  "filesGlob": [
+    "./typings/index.d.ts",
+    "!./src/typings/**/*",
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
+  "files": [
+    "./typings/index.d.ts",
+  ]
+}
