@@ -1,0 +1,27 @@
+{
+  "name": "rxobj",
+  "version": "0.1.0",
+  "title": "Reactive Object Framework",
+  "description": "Library for building reactive objects with reactive properties and commands using RxJS",
+  "keywords": [
+    "reactive",
+    "rx",
+    "rxjs"
+  ],
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patsissons/rxobj.git"
+  },
+  "author": "Pat Sissons <patricksissons@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/patsissons/rxobj/issues"
+  },
+  "homepage": "https://github.com/patsissons/rxobj#readme",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
