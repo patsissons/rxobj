@@ -24,8 +24,12 @@
     "rxjs": "^5.0.0-beta.10"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "^3.2.0",
     "eslint-config-strict": "^9.1.0",
+    "mocha": "^2.5.3",
+    "sinon": "^1.17.5",
+    "sinon-chai": "^2.8.0",
     "tslint": "^3.14.0",
     "tslint-config-unional": "^0.4.3",
     "typescript": "^1.8.10",
