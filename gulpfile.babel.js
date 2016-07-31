@@ -77,10 +77,10 @@ if (config.verbose) {
 // Default build task
 gulp.task('default', [ 'help' ]);
 // Default test task
-gulp.task('test', [ 'default' ]);
+gulp.task('test', [ 'mocha' ]);
 
 // npm test task
-gulp.task('npm:test', [ 'test' ]);
+gulp.task('npm:test', [ 'dist' ]);
 // npm start task
 gulp.task('npm:start', [ 'default' ]);
 
