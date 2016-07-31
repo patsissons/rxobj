@@ -13,7 +13,6 @@
   ],
   "files": [
     "./typings/index.d.ts",
-    "./src/index.ts",
     "./src/rxobj.ts",
     "./test/Sanity.spec.ts"
   ]
