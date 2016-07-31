@@ -9,7 +9,10 @@
     "rxjs"
   ],
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "gulp npm:test",
+    "start": "gulp npm:start"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/patsissons/rxobj.git"
