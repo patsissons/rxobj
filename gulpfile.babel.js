@@ -224,6 +224,11 @@ gulp.task('typescript:lib:ES6', () => {
 
   return gulp
     .src([
+      // we need to punt out es6-shim definitions, so we have to kind of
+      // hack the globbing
+      path.resolve(config.paths.typings, '**', 'index.d.ts'),
+      `!${ path.resolve(config.paths.typings, 'index.d.ts') }`,
+      `!${ path.resolve(config.paths.typings, '**', 'es6-shim', 'index.d.ts') }`,
       path.resolve(config.paths.src, '**', '*.ts'),
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: 'src' })
