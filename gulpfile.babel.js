@@ -278,7 +278,9 @@ gulp.task('typescript:typings', () => {
 gulp.task('typescript:test', () => {
   log('Compiling typescript tests...');
 
-  const tsconfig = typescript.createProject(files.tsconfig);
+  const tsconfig = typescript.createProject(files.tsconfig, {
+    target: 'ES5',
+  });
 
   return gulp
     .src([
