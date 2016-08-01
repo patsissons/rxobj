@@ -1,9 +1,7 @@
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-import * as sinonChai from 'sinon-chai';
-
-const should = chai.should();
-chai.use(sinonChai);
+import setup from './setup';
+const should = setup(chai);
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {

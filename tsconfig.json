@@ -13,7 +13,19 @@
   ],
   "files": [
     "./typings/index.d.ts",
+    "./src/Extensions.ts",
+    "./src/PausableBuffer.ts",
+    "./src/ReactiveApp.ts",
+    "./src/ReactiveEvent.ts",
+    "./src/ReactiveProperty.ts",
+    "./src/ReactiveState.ts",
     "./src/rxobj.ts",
-    "./test/Sanity.spec.ts"
+    "./src/SubjectScheduler.ts",
+    "./test/PausableBuffer.spec.ts",
+    "./test/ReactiveApp.spec.ts",
+    "./test/ReactiveEvent.spec.ts",
+    "./test/ReactiveProperty.spec.ts",
+    "./test/Sanity.spec.ts",
+    "./test/setup.ts"
   ]
 }
