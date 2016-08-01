@@ -21,16 +21,20 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
 
   private getPropertyName(prop: ReactiveProperty<ReactiveObject, any>) {
     if (prop.name == null) {
-      Object
-        .getOwnPropertyNames(this)
-        .map(name => ({ name, prop: <ReactiveProperty<ReactiveObject, any>>(<any>this)[name] }))
-        .filter(x => x.prop != null && x.prop.owner === this && x.prop.name == null)
-        .forEach(x => {
-          x.prop.name = x.name;
-        });
+      this.resolvePropertyNames();
     }
 
     return prop.name;
+  }
+
+  private resolvePropertyNames() {
+    Object
+      .getOwnPropertyNames(this)
+      .map(name => ({ name, prop: <ReactiveProperty<ReactiveObject, any>>(<any>this)[name] }))
+      .filter(x => x.prop != null && x.prop.owner === this && x.prop.name == null)
+      .forEach(x => {
+        x.prop.name = x.name;
+      });
   }
 
   protected registerProperty(prop: ReactiveProperty<ReactiveObject, any>) {
