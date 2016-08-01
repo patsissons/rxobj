@@ -3,7 +3,7 @@ import * as chai from 'chai';
 import setup from './setup';
 const should = setup(chai);
 
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveStreamProperty, ReactiveValueProperty } from '../src/ReactiveProperty';
 
 describe('ReactiveProperty', () => {
@@ -23,6 +23,24 @@ describe('ReactiveProperty', () => {
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
+    });
+  });
+
+  describe('name', () => {
+    it('can be assigned and read', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      prop.name = testValue;
+
+      prop.name.should.eql(testValue);
+    });
+
+    it('can be assigned only once', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      prop.name = testValue;
+
+      should.throw(() => prop.name = 'error');
     });
   });
 
@@ -115,6 +133,119 @@ describe('ReactiveProperty', () => {
       });
 
       prop.value = testValue;
+    });
+  });
+
+  describe('areChangeNotificationsEnabled', () => {
+    it('defaults to true', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      prop.areChangeNotificationsEnabled().should.be.true;
+    });
+
+    it('is false when suppressed and true otherwise', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      Observable.using(
+        () => prop.suppressChangeNotifications(),
+        x => {
+          prop.areChangeNotificationsEnabled().should.be.false;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      prop.areChangeNotificationsEnabled().should.be.true;
+    });
+  });
+
+  describe('areChangeNotificationsDelayed', () => {
+    it('defaults to false', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      prop.areChangeNotificationsDelayed().should.be.false;
+    });
+
+    it('is true when delayed and false otherwise', () => {
+      const prop = new ReactiveValueProperty(testOwner, testValue);
+
+      Observable.using(
+        () => prop.delayChangeNotifications(),
+        x => {
+          prop.areChangeNotificationsDelayed().should.be.true;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      prop.areChangeNotificationsDelayed().should.be.false;
+    });
+  });
+
+  describe('suppressChangeNotifications', () => {
+    it('prevents change notifications completely when suppressed', () => {
+      const prop = new ReactiveValueProperty(testOwner, 0);
+      const subject = new BehaviorSubject<number>(0);
+
+      prop.changed
+        .map(x => x.value)
+        .subscribe(subject);
+
+      subject.value.should.eql(0);
+
+      prop.value = 1;
+      subject.value.should.eql(1);
+
+      Observable.using(
+        () => prop.suppressChangeNotifications(),
+        x => {
+          prop.value = 2;
+          subject.value.should.eql(1);
+
+          prop.value = 3;
+          subject.value.should.eql(1);
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      subject.value.should.eql(1);
+    });
+  });
+
+  describe('delayChangeNotifications', () => {
+    it('delays change notifications until disabled', (done) => {
+      const prop = new ReactiveValueProperty(testOwner, 0);
+      const subject = new BehaviorSubject<number>(0);
+
+      prop.changed
+        .map(x => x.value)
+        .subscribe(subject);
+
+      subject.value.should.eql(0);
+
+      prop.value = 1;
+      subject.value.should.eql(1);
+
+      subject
+        .subscribe(x => {
+          if (x === 3) {
+            done();
+          }
+        });
+
+      Observable.using(
+        () => prop.delayChangeNotifications(),
+        x => {
+          prop.value = 2;
+          subject.value.should.eql(1);
+
+          prop.value = 3;
+          subject.value.should.eql(1);
+
+          x.unsubscribe();
+        }
+      ).subscribe();
     });
   });
 
