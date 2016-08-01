@@ -10,7 +10,7 @@ export interface ReactivePropertyEventValue {
   propertyName: string;
 }
 
-export class ReactiveObject extends ReactiveState<ReactiveEvent<ReactiveObject, ReactivePropertyEventValue>> {
+export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<ReactiveObject, ReactivePropertyEventValue>> {
   constructor(errorScheduler?: Scheduler) {
     super(errorScheduler);
 
