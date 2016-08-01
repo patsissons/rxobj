@@ -13,7 +13,6 @@
   ],
   "files": [
     "./typings/index.d.ts",
-    "./src/rxobj.d.ts",
     "./src/Extensions.ts",
     "./src/PausableBuffer.ts",
     "./src/ReactiveApp.ts",
@@ -21,6 +20,7 @@
     "./src/ReactiveObject.ts",
     "./src/ReactiveProperty.ts",
     "./src/ReactiveState.ts",
+    "./src/rxobj.ts",
     "./src/SubjectScheduler.ts",
     "./test/PausableBuffer.spec.ts",
     "./test/ReactiveApp.spec.ts",
