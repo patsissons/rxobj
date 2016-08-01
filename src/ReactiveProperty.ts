@@ -14,6 +14,10 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
     this.currentValue = initialValue;
   }
 
+  // this will get filled in by the owner when it generates its first
+  // notification.
+  private propertyName: string;
+
   protected currentValue: T;
 
   protected initialize(source: Observable<T>) {
@@ -29,6 +33,16 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
     );
   }
 
+  public set name(propertyName: string) {
+    if (this.propertyName != null) {
+      throw 'Manually setting a reactive property name is not allowed';
+    }
+
+    this.propertyName = propertyName;
+  }
+
+  public get name() {
+    return this.propertyName;
   }
 
   public get value() {
