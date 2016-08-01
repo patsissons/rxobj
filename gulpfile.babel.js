@@ -208,6 +208,7 @@ gulp.task('typescript:lib:ES5', () => {
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: 'src' })
     .pipe(typescript(tsconfig))
     .pipe(gulp.dest(path.resolve(config.paths.build, 'lib', 'ES5')));
@@ -224,6 +225,7 @@ gulp.task('typescript:lib:ES6', () => {
   return gulp
     .src([
       path.resolve(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: 'src' })
     .pipe(typescript(tsconfig))
     .pipe(gulp.dest(path.resolve(config.paths.build, 'lib', 'ES6')));
@@ -241,6 +243,7 @@ gulp.task('typescript:bundle', () => {
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ])
     .pipe(typescript(tsconfig))
     .js
@@ -260,8 +263,7 @@ gulp.task('typescript:typings', () => {
 
   return gulp
     .src([
-      path.resolve(config.paths.typings, 'index.d.ts'),
-      path.resolve(config.paths.src, 'rxobj.ts'),
+      path.resolve(config.paths.src, 'rxobj.d.ts'),
     ])
     .pipe(typescript(tsconfig))
     .dts
@@ -277,6 +279,7 @@ gulp.task('typescript:test', () => {
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
       path.resolve(config.paths.test, '**', '*.ts'),
     ], { base: '.' })
     .pipe(typescript(tsconfig))
@@ -307,6 +310,7 @@ gulp.task('lint:ts', () => {
   return gulp
     .src([
       path.resolve(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
       path.resolve(config.paths.test, '**', '*.ts'),
     ])
     .pipe(tslint({
@@ -357,6 +361,7 @@ gulp.task('watch:mocha', () => {
   return gulp
     .watch([
       path.join(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
       path.join(config.paths.test, '**', '*.ts'),
     ], () => {
       rseq('typescript:test', 'mocha:run', () => null);
