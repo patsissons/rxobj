@@ -24,7 +24,7 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
       Object
         .getOwnPropertyNames(this)
         .map(name => ({ name, prop: <ReactiveProperty<ReactiveObject, any>>(<any>this)[name] }))
-        .filter(x => x.prop.owner === this && x.name == null)
+        .filter(x => x.prop != null && x.prop.owner === this && x.prop.name == null)
         .forEach(x => {
           x.prop.name = x.name;
         });
