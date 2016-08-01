@@ -1,1 +1,1 @@
-module.exports = require('./dist/rx.obj.js');
+module.exports = require('./dist/rxobj.js');
