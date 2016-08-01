@@ -1,6 +1,9 @@
-import './Extensions';
-// export { PausableBufferSignature } from './PausableBuffer';
+/// <reference path="../typings/index.d.ts" />
 
+// augmentations
+import './Extensions';
+
+// helper classes
 export { SubjectScheduler } from './SubjectScheduler';
 
 export { ReactiveApp } from './ReactiveApp';

@@ -5,7 +5,6 @@ import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
 // we need to import this to satify the compiler
-// tslint:disable-next-line no-unused-variable
 import { QueueScheduler } from 'rxjs/scheduler/QueueScheduler';
 
 export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEvent<ReactiveProperty<TObj, T>, T>> {
@@ -45,7 +44,7 @@ export class ReactiveStreamProperty<TObj, T> extends ReactiveProperty<TObj, T> {
 }
 
 export class ReactiveValueProperty<TObj, T> extends ReactiveProperty<TObj, T> {
-  constructor(owner: TObj, initialValue?: T, scheduler = Schedulers.queue, errorScheduler?: Scheduler) {
+  constructor(owner: TObj, initialValue?: T, scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
     super(owner, initialValue, errorScheduler);
 
     this.valueHandler = new SubjectScheduler<T>(scheduler);

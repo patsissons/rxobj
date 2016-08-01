@@ -1,10 +1,8 @@
 import { Subscriber, Scheduler } from 'rxjs';
 
 // we need to import these to satify the compiler
-// tslint:disable no-unused-variable
 import { AsapScheduler } from 'rxjs/scheduler/AsapScheduler';
 import { QueueScheduler } from 'rxjs/scheduler/QueueScheduler';
-// tslint:enable no-unused-variable
 
 // null scheduler is the old immediate scheduler
 // queue scheduler is the old currentThread scheduler
@@ -50,6 +48,8 @@ export class ReactiveApp {
   private static createMainScheduler() {
     // NOTE: The queue scheduler is the currentThread scheduler
     // NOTE: The asap scheduler is the default scheduler
-    return ReactiveApp.isUnitTestRunner ? Scheduler.queue : Scheduler.asap;
+    return ReactiveApp.isUnitTestRunner ?
+      <QueueScheduler>Scheduler.queue :
+      <AsapScheduler>Scheduler.asap;
   }
 }

@@ -1,4 +1,4 @@
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Subscription, Observable } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
 import { Scheduler } from 'rxjs/Scheduler';
 import { PartialObserver } from 'rxjs/Observer';
@@ -31,7 +31,7 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
     this.subject.complete();
   }
 
-  public getScheduledObservable() {
+  public getScheduledObservable(): Observable<T> {
     return this.scheduler == null ?
       this.subject.asObservable() :
       this.subject.observeOn(this.scheduler);
