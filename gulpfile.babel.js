@@ -363,7 +363,6 @@ gulp.task('watch:mocha', () => {
 });
 
 gulp.task('dist', [ 'clean' ], (done) => {
-  // rseq('tsconfig', 'lint', 'mocha', 'typescript', 'dist:deploy', done);
   rseq('tsconfig', 'typescript:test', 'mocha:run', 'lint', 'typescript', 'dist:deploy', done);
 });
 
