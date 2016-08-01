@@ -9,6 +9,6 @@ deploy:
   provider: npm
   email: patricksissons@gmail.com
   on:
-    branch: hotfix/travis-npm
+    tags: true
   api_key:
     secure: UAufDqdU4QYr4lRLZJVSuw3CpiI56RxRECZ4uBU7fUDEsujDRYhFhpFN5QLiieDe3c4cZLKCJoWv5WIOF6YKnmwoJMNR4b0K/2R0Xaz8LlrQ6FFR+t5GBW9OvawncmTJ6g1Gv0+BuBHuRAag70yHuXGS34ZKL7zhUKgaMdisy/kpa1fvfcFPxNT3S/M5ngp2+er3DRfy5cAWYV7aIiGSMeQnh/VDXjUxeitycFg5iBTApbWLv/7+wyop3b+xXlTVsWUbFinyKbYCuqRHiDKn0vl6rTYw9IzGzkVJbvaz6USgvkXs1x8ITYL5vYu5lQV3RRmeuJkiXZXZB+0Z9CIxd4FQrPhKTqIZ5aegbzFdVpYV8LqgvWy7uBqetobFyzG+GUm07+YmEWTkofDOqVVPr4S+0DRoHWOn6w3Uf9GnXY1BFeKyj7AiymLzTNDFZ08Aj3eqUvCxDCAxV3Zyi1JachKGo7kzHVZOZDMKzteFKDhyWVfb/hRq/HsUAM1WkaUleEhSpbi7EWZRx7q35zWOcK627+9G7IlW3QHLjjVEVdMeb8rClWj+QbWQhzK1StqTfpX8cYTmBb8UWeZ0LQrhUJWxNBJ2iOungLHCPtlh+7zrPQ0ZXIQDX6JOS4MbC3QqFz8FRaEv/3DmdEVO7fbwyGO+Pp+yh5T/s15bEJpEHoo=
