@@ -68,6 +68,14 @@ export class ReactiveState<T> extends Subscription {
     this.notifyObservable(changed(), this.changedSubject);
   }
 
+  protected notifyObservable(change: T, subject: Subject<T>) {
+    try {
+      subject.next(change);
+    } catch (err) {
+      this.thrownErrorsHandler.next(err);
+    }
+  }
+
   public get changing() {
     return this.changingObservable;
   }
@@ -115,13 +123,5 @@ export class ReactiveState<T> extends Subscription {
         this.startDelayNotificationsSubject.next(null);
       }
     });
-  }
-
-  public notifyObservable(change: T, subject: Subject<T>) {
-    try {
-      subject.next(change);
-    } catch (err) {
-      this.thrownErrorsHandler.next(err);
-    }
   }
 }
