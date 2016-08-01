@@ -1,6 +1,6 @@
 {
   "name": "rxobj",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "title": "Reactive Object Framework",
   "description": "Library for building reactive objects with reactive properties and commands using RxJS",
   "keywords": [
