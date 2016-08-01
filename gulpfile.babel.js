@@ -6,6 +6,8 @@ import tslint from 'gulp-tslint';
 import mocha from 'gulp-mocha';
 import typescript from 'gulp-typescript';
 import uglify from 'gulp-uglify';
+import spawnMocha from 'gulp-spawn-mocha';
+import coveralls from 'gulp-coveralls';
 import minimist from 'minimist';
 import path from 'path';
 import del from 'del';
@@ -21,6 +23,7 @@ const options = {
   boolean: [
     'verbose',
     'quiet',
+    'force',
   ],
   alias: {
     libpath: [ 'l', 'lib' ],
@@ -35,6 +38,7 @@ const options = {
     reporter: 'spec',
     verbose: false,
     quiet: false,
+    force: false,
   },
 };
 
@@ -51,6 +55,7 @@ const files = {
 const config = {
   verbose: args.verbose,
   quiet: args.quiet,
+  force: args.force,
   reporter: args.reporter,
   paths: {
     typings: path.resolve(__dirname, 'typings'),
@@ -59,6 +64,7 @@ const config = {
     build: path.resolve(__dirname, 'build'),
     lib: args.libpath,
     dist: args.distpath,
+    coverage: path.resolve(__dirname, 'coverage'),
   },
 };
 
@@ -134,7 +140,7 @@ Tasks:
 
 gulp.task('clean', [ 'clean:all' ]);
 
-gulp.task('clean:all', [ 'clean:typings', 'clean:build', 'clean:lib', 'clean:dist' ]);
+gulp.task('clean:all', [ 'clean:typings', 'clean:build', 'clean:lib', 'clean:dist', 'clean:coverage' ]);
 
 gulp.task('clean:typings', () => {
   log('Cleaning', util.colors.magenta(config.paths.typings));
@@ -174,6 +180,15 @@ gulp.task('clean:dist', () => {
   // force?
   del.sync([
     config.paths.dist,
+  ]);
+});
+
+gulp.task('clean:coverage', () => {
+  log('Cleaning', util.colors.magenta(config.paths.coverage));
+
+  // force?
+  del.sync([
+    config.paths.coverage,
   ]);
 });
 
@@ -345,6 +360,38 @@ gulp.task('mocha:run', () => {
     .pipe(mocha({ reporter }));
 });
 
+gulp.task('mocha:coverage', () => {
+  log('Covering tests with mocha and istanbul...');
+
+  const reporter = config.quiet ? 'dot' : config.reporter;
+
+  return gulp
+    .src([
+      path.resolve(config.paths.build, 'test', '**', '*.spec.js'),
+    ], { read: false })
+    .pipe(spawnMocha({
+      recursive: true,
+      istanbul: true,
+      reporter,
+    }));
+});
+
+gulp.task('coveralls', [ 'coveralls:upload' ]);
+
+gulp.task('coveralls:upload', (done) => {
+  if (process.env.CI || config.force === true) {
+    log('Uploading coverage results to coveralls...');
+
+    gulp
+      .src(path.join(config.paths.coverage, '**', 'lcov.info'))
+      .pipe(coveralls())
+      .on('end', done);
+  } else {
+    // eslint-disable-next-line callback-return
+    done(`Use ${ util.colors.cyan('--force') } to upload coverage data manually`);
+  }
+});
+
 gulp.task('watch', [ 'watch:mocha' ]);
 
 gulp.task('watch:lint', () => {
@@ -391,7 +438,7 @@ gulp.task('watch:mocha', () => {
 });
 
 gulp.task('dist', [ 'clean' ], (done) => {
-  rseq('tsconfig', 'typescript:test', 'mocha:run', 'lint', 'typescript', 'dist:deploy', done);
+  rseq('tsconfig', 'typescript:test', 'mocha:coverage', 'lint', 'typescript', 'dist:deploy', done);
 });
 
 gulp.task('dist:deploy', [ 'dist:deploy:bundle', 'dist:deploy:typings', 'dist:deploy:lib' ]);
