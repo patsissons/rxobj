@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "noImplicitAny": true
+  },
+  "filesGlob": [
+    "./typings/index.d.ts",
+    "!./src/typings/**/*",
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
+  "files": [
+    "./typings/index.d.ts",
+    "./src/rxobj.d.ts",
+    "./src/Extensions.ts",
+    "./src/PausableBuffer.ts",
+    "./src/ReactiveApp.ts",
+    "./src/ReactiveEvent.ts",
+    "./src/ReactiveObject.ts",
+    "./src/ReactiveProperty.ts",
+    "./src/ReactiveState.ts",
+    "./src/SubjectScheduler.ts",
+    "./test/PausableBuffer.spec.ts",
+    "./test/ReactiveApp.spec.ts",
+    "./test/ReactiveEvent.spec.ts",
+    "./test/ReactiveObject.spec.ts",
+    "./test/ReactiveProperty.spec.ts",
+    "./test/Sanity.spec.ts",
+    "./test/setup.ts"
+  ]
+}

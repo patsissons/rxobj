@@ -1,0 +1,4 @@
+.vscode/
+build/
+typings/
+package.json
