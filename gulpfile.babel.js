@@ -276,10 +276,11 @@ gulp.task('typescript:test', () => {
   return gulp
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
+      path.resolve(config.paths.src, '**', '*.ts'),
       path.resolve(config.paths.test, '**', '*.ts'),
     ], { base: '.' })
     .pipe(typescript(tsconfig))
-    .pipe(gulp.dest(path.resolve(config.paths.build, 'test')));
+    .pipe(gulp.dest(path.resolve(config.paths.build)));
 });
 
 gulp.task('lint', [ 'lint:all' ]);
