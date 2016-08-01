@@ -18,6 +18,7 @@
     "./src/PausableBuffer.ts",
     "./src/ReactiveApp.ts",
     "./src/ReactiveEvent.ts",
+    "./src/ReactiveObject.ts",
     "./src/ReactiveProperty.ts",
     "./src/ReactiveState.ts",
     "./src/SubjectScheduler.ts",
