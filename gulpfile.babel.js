@@ -360,6 +360,21 @@ gulp.task('watch:lint', () => {
     ], () => rseq('lint', () => null));
 });
 
+gulp.task('watch:test', () => {
+  rseq('tsconfig', 'typescript:test', () => null);
+
+  log('Watching for changes...');
+
+  return gulp
+    .watch([
+      path.join(config.paths.src, '**', '*.ts'),
+      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
+      path.join(config.paths.test, '**', '*.ts'),
+    ], () => {
+      rseq('typescript:test', () => null);
+    });
+});
+
 gulp.task('watch:mocha', () => {
   rseq('tsconfig', 'typescript:test', 'mocha:run', () => null);
 
