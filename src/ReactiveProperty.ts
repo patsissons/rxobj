@@ -17,7 +17,7 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
   protected currentValue: T;
 
   protected initialize(source: Observable<T>) {
-    const sourceSubscription = source
+    this.add(source
       .distinctUntilChanged()
       .subscribe(x => {
         this.notifyPropertyChanging(() => new ReactiveEvent(this, x));
@@ -25,9 +25,10 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
         this.currentValue = x;
 
         this.notifyPropertyChanged(() => new ReactiveEvent(this, this.currentValue));
-      }, this.thrownErrorsHandler.next);
+      }, this.thrownErrorsHandler.next)
+    );
+  }
 
-    this.add(sourceSubscription);
   }
 
   public get value() {
