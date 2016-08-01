@@ -11,7 +11,7 @@ This project is designed to provide a ***minimalistic*** approach to reactive ob
 [![npm License](https://img.shields.io/npm/l/rxobj.svg)](https://www.npmjs.com/package/rxobj)
 [![Dependency Status](https://img.shields.io/versioneye/d/nodejs/rxobj.svg)](https://www.versioneye.com/nodejs/rxobj)
 [![eslint-strict-style](https://img.shields.io/badge/code%20style-strict-117D6B.svg)](https://github.com/keithamus/eslint-config-strict)
-[![Join the chat at https://gitter.im/patsissons/rxobj](https://badges.gitter.im/patsissons/rxobj.svg)](https://gitter.im/patsissons/rxobj?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/rxobj/rxobj](https://badges.gitter.im/rxobj/rxobj.svg)](https://gitter.im/rxobj/rxobj?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Attribution
 
