@@ -8,4 +8,3 @@ declare module '~rxjs/Observable' {
     pausableBuffer: PausableBufferSignature<T>;
   }
 }
-
