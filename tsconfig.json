@@ -16,6 +16,7 @@
     "./src/Extensions.ts",
     "./src/PausableBuffer.ts",
     "./src/ReactiveApp.ts",
+    "./src/ReactiveCommand.ts",
     "./src/ReactiveEvent.ts",
     "./src/ReactiveObject.ts",
     "./src/ReactiveProperty.ts",
