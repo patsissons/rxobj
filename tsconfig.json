@@ -25,6 +25,7 @@
     "./src/SubjectScheduler.ts",
     "./test/PausableBuffer.spec.ts",
     "./test/ReactiveApp.spec.ts",
+    "./test/ReactiveCommand.spec.ts",
     "./test/ReactiveEvent.spec.ts",
     "./test/ReactiveObject.spec.ts",
     "./test/ReactiveProperty.spec.ts",
