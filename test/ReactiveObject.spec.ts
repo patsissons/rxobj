@@ -11,33 +11,21 @@ describe('ReactiveObject', () => {
     public valueProp = this.property<number>();
     public subject = new Subject<number>();
     public streamProp = this.propertyFrom(this.subject);
+    public cmd = this.command(x => true);
   }
+
+  describe('isReactive', () => {
+    const obj = new TestObject();
+
+    should.exist(obj.isReactive);
+    obj.isReactive.should.be.true;
+  });
 
   describe('changing', () => {
     it('can generate notifications from changing value properties', (done) => {
       const obj = new TestObject();
 
       obj.changing.subscribe(x => {
-        should.exist(x);
-        should.exist(x.source);
-        should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
-
-        x.source.should.equal(obj);
-        x.value.member.should.eql(obj.valueProp);
-        x.value.memberName.should.eql('valueProp');
-
-        done();
-      });
-
-      obj.valueProp.value = 1;
-    });
-
-    it('can generate notifications from changed value properties', (done) => {
-      const obj = new TestObject();
-
-      obj.changed.subscribe(x => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
@@ -72,6 +60,28 @@ describe('ReactiveObject', () => {
       });
 
       obj.subject.next(1);
+    });
+  });
+
+  describe('changed', () => {
+    it('can generate notifications from changed value properties', (done) => {
+      const obj = new TestObject();
+
+      obj.changed.subscribe(x => {
+        should.exist(x);
+        should.exist(x.source);
+        should.exist(x.value);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
+
+        x.source.should.equal(obj);
+        x.value.member.should.eql(obj.valueProp);
+        x.value.memberName.should.eql('valueProp');
+
+        done();
+      });
+
+      obj.valueProp.value = 1;
     });
 
     it('can generate notifications from changed stream properties', (done) => {

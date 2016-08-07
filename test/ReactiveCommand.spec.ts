@@ -10,6 +10,13 @@ describe('ReactiveCommand', () => {
   const testOwner = new Object();
 
   describe('constructor', () => {
+    it('stores the owner', () => {
+      const cmd = new ReactiveCommand(testOwner, x => true);
+
+      should.exist(cmd.owner);
+      cmd.owner.should.equal(testOwner);
+    });
+
     it('configures isExecuting to start with false', (done) => {
       const cmd = new ReactiveCommand(testOwner, x => true);
 
