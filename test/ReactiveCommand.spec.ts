@@ -7,9 +7,11 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveCommand } from '../src/ReactiveCommand';
 
 describe('ReactiveCommand', () => {
+  const testOwner = new Object();
+
   describe('constructor', () => {
     it('configures isExecuting to start with false', (done) => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       should.exist(cmd.isExecuting);
 
@@ -23,7 +25,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('configures canExecute to always be true if not provided', (done) => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       should.exist(cmd.canExecute);
 
@@ -37,7 +39,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('can be configured with a custom canExecute observable', (done) => {
-      const cmd = new ReactiveCommand(x => true, Observable.of(false));
+      const cmd = new ReactiveCommand(testOwner, x => true, Observable.of(false));
 
       cmd.canExecute
         .subscribe(x => {
@@ -48,14 +50,14 @@ describe('ReactiveCommand', () => {
     });
 
     it('configures the changing and changed observables', () => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       should.exist(cmd.changing);
       should.exist(cmd.changed);
     });
 
     it('configures the results observable', () => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       should.exist(cmd.results);
     });
@@ -64,7 +66,7 @@ describe('ReactiveCommand', () => {
   describe('isExecuting', () => {
     it('is true while executing', (done) => {
       const isExecuting = new BehaviorSubject(false);
-      const cmd = new ReactiveCommand(x => {
+      const cmd = new ReactiveCommand(testOwner, x => {
         isExecuting.value.should.be.true;
 
         done();
@@ -79,7 +81,7 @@ describe('ReactiveCommand', () => {
 
     it('resets to false after executing', (done) => {
       const isExecuting = new BehaviorSubject(false);
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
       let count = 0;
 
       cmd.isExecuting.subscribe(isExecuting);
@@ -108,7 +110,7 @@ describe('ReactiveCommand', () => {
 
   describe('results', () => {
     it('contains the execution results', () => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
       const results = new BehaviorSubject(false);
 
       cmd.results.subscribe(results);
@@ -125,7 +127,7 @@ describe('ReactiveCommand', () => {
     it('depends on both isExecuting and canExecute', (done) => {
       const canExecuteInput = new BehaviorSubject(true);
       const canExecute = new BehaviorSubject(false);
-      const cmd = new ReactiveCommand(x => {
+      const cmd = new ReactiveCommand(testOwner, x => {
         canExecute.value.should.be.false;
 
         return true;
@@ -155,7 +157,7 @@ describe('ReactiveCommand', () => {
   describe('execute', () => {
     it('sends the parameter to the execution action', (done) => {
       const param = 'testing';
-      const cmd = new ReactiveCommand(x => {
+      const cmd = new ReactiveCommand(testOwner, x => {
         should.exist(x);
         x.should.eql(param);
 
@@ -166,7 +168,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('uses a null parameter if none is provided', (done) => {
-      const cmd = new ReactiveCommand(x => {
+      const cmd = new ReactiveCommand(testOwner, x => {
         should.not.exist(x);
 
         done();
@@ -177,7 +179,7 @@ describe('ReactiveCommand', () => {
 
     it('generates a changing event that contains the execution parameter', (done) => {
       const param = 'testing';
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       cmd.changing.subscribe(x => {
         should.exist(x);
@@ -197,7 +199,7 @@ describe('ReactiveCommand', () => {
 
     it('generates a changed event that contains the execution results', (done) => {
       const param = 'testing';
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
 
       cmd.changed.subscribe(x => {
         should.exist(x);
@@ -217,7 +219,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('delays execution when delayed', () => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
       const results = new BehaviorSubject(false);
 
       cmd.results.subscribe(results);
@@ -237,7 +239,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('suppresses execution when suppressed', () => {
-      const cmd = new ReactiveCommand(x => true);
+      const cmd = new ReactiveCommand(testOwner, x => true);
       const results = new BehaviorSubject(false);
 
       cmd.results.subscribe(results);
@@ -257,7 +259,7 @@ describe('ReactiveCommand', () => {
     });
 
     it('prevents concurrent execution', (done) => {
-      const cmd = new ReactiveCommand(x => {
+      const cmd = new ReactiveCommand(testOwner, x => {
         should.throw(() => cmd.execute());
 
         done();
