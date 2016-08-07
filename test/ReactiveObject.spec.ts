@@ -21,12 +21,12 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.property);
-        should.exist(x.value.propertyName);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.property.should.eql(obj.valueProp);
-        x.value.propertyName.should.eql('valueProp');
+        x.value.member.should.eql(obj.valueProp);
+        x.value.memberName.should.eql('valueProp');
 
         done();
       });
@@ -41,12 +41,12 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.property);
-        should.exist(x.value.propertyName);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.property.should.eql(obj.valueProp);
-        x.value.propertyName.should.eql('valueProp');
+        x.value.member.should.eql(obj.valueProp);
+        x.value.memberName.should.eql('valueProp');
 
         done();
       });
@@ -61,12 +61,12 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.property);
-        should.exist(x.value.propertyName);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.property.should.eql(obj.streamProp);
-        x.value.propertyName.should.eql('streamProp');
+        x.value.member.should.eql(obj.streamProp);
+        x.value.memberName.should.eql('streamProp');
 
         done();
       });
@@ -81,12 +81,12 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.property);
-        should.exist(x.value.propertyName);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.property.should.eql(obj.streamProp);
-        x.value.propertyName.should.eql('streamProp');
+        x.value.member.should.eql(obj.streamProp);
+        x.value.memberName.should.eql('streamProp');
 
         done();
       });
