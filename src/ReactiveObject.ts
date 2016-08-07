@@ -4,6 +4,7 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveState } from './ReactiveState';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveStreamProperty, ReactiveValueProperty } from './ReactiveProperty';
+import { ReactiveCommand } from './ReactiveCommand';
 
 export type ReactiveMember = ReactiveState<ReactiveEvent<ReactiveState<any>, any>>;
 
@@ -82,5 +83,13 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
     this.registerMember(prop);
 
     return prop;
+  }
+
+  protected command<TResult>(executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
+    const cmd = new ReactiveCommand(this, executeAction, canExecute, errorScheduler);
+
+    this.registerMember(cmd);
+
+    return cmd;
   }
 }
