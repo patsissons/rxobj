@@ -147,7 +147,7 @@ gulp.task('clean:typings', () => {
 
   del.sync([
     config.paths.typings,
-  ]);
+  ], { force: true });
 });
 
 gulp.task('clean:build', () => {
@@ -155,7 +155,7 @@ gulp.task('clean:build', () => {
 
   del.sync([
     config.paths.build,
-  ]);
+  ], { force: true });
 });
 
 gulp.task('clean:lib', () => {
@@ -166,30 +166,27 @@ gulp.task('clean:lib', () => {
 
   log('Cleaning', util.colors.magenta(es5), 'and', util.colors.magenta(es6));
 
-  // force?
   del.sync([
     es5,
     es6,
-  ]);
+  ], { force: true });
   /* eslint-enable id-match*/
 });
 
 gulp.task('clean:dist', () => {
   log('Cleaning', util.colors.magenta(config.paths.dist));
 
-  // force?
   del.sync([
     config.paths.dist,
-  ]);
+  ], { force: true });
 });
 
 gulp.task('clean:coverage', () => {
   log('Cleaning', util.colors.magenta(config.paths.coverage));
 
-  // force?
   del.sync([
     config.paths.coverage,
-  ]);
+  ], { force: true });
 });
 
 gulp.task('typings', () => {
