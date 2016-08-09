@@ -469,7 +469,7 @@ gulp.task('watch:mocha', () => {
 });
 
 gulp.task('dist', [ 'clean' ], (done) => {
-  rseq('tsconfig', 'typescript:test', 'mocha:coverage', 'lint', 'typescript', 'dist:deploy', done);
+  rseq('tsconfig', 'typescript:test', 'mocha:coverage', 'istanbul:remap', 'lint', 'typescript', 'dist:deploy', done);
 });
 
 gulp.task('dist:deploy', [ 'dist:deploy:bundle', 'dist:deploy:typings', 'dist:deploy:lib' ]);
