@@ -475,7 +475,7 @@ gulp.task('dist', [ 'clean' ], (done) => {
 gulp.task('dist:deploy', [ 'dist:deploy:bundle', 'dist:deploy:typings', 'dist:deploy:lib' ]);
 
 gulp.task('dist:deploy:bundle', () => {
-  const target = path.resolve(config.paths.build, 'bundle', files.bundle);
+  const target = path.resolve(config.paths.build, 'bundle', `${ files.bundle }*`);
 
   log('Deploying', util.colors.magenta(target), 'to', util.colors.magenta(config.paths.dist));
 
