@@ -8,6 +8,7 @@ import typescript from 'gulp-typescript';
 import sourcemaps from 'gulp-sourcemaps';
 import uglify from 'gulp-uglify';
 import spawnMocha from 'gulp-spawn-mocha';
+import remapIstanbul from 'remap-istanbul/lib/gulpRemapIstanbul';
 import coveralls from 'gulp-coveralls';
 import minimist from 'minimist';
 import path from 'path';
@@ -387,6 +388,22 @@ gulp.task('mocha:coverage', () => {
       recursive: true,
       istanbul: true,
       reporter,
+    }));
+});
+
+gulp.task('istanbul:remap', () => {
+  log('Remapping istanbul coverage results to typescript files...');
+  return gulp
+    .src([
+      path.resolve(config.paths.coverage, 'coverage.json'),
+    ])
+    .pipe(remapIstanbul({
+      reports: {
+        'json': path.resolve(config.paths.coverage, 'coverage.json'),
+        'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
+        'html': path.resolve(config.paths.coverage, 'lcov-report'),
+      },
+      fail: true,
     }));
 });
 
