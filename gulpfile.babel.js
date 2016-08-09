@@ -5,6 +5,7 @@ import eslint from 'gulp-eslint';
 import tslint from 'gulp-tslint';
 import mocha from 'gulp-mocha';
 import typescript from 'gulp-typescript';
+import sourcemaps from 'gulp-sourcemaps';
 import uglify from 'gulp-uglify';
 import spawnMocha from 'gulp-spawn-mocha';
 import coveralls from 'gulp-coveralls';
@@ -216,14 +217,18 @@ gulp.task('typescript:lib:ES5', () => {
     target: 'ES5',
   });
 
+  const outDir = path.resolve(config.paths.build, 'lib', 'ES5');
+
   return gulp
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, '**', '*.ts'),
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ], { base: 'src' })
+    ], { base: path.resolve(config.paths.src) })
+    .pipe(sourcemaps.init())
     .pipe(typescript(tsconfig))
-    .pipe(gulp.dest(path.resolve(config.paths.build, 'lib', 'ES5')));
+    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
+    .pipe(gulp.dest(outDir));
 });
 
 gulp.task('typescript:lib:ES6', () => {
@@ -234,6 +239,8 @@ gulp.task('typescript:lib:ES6', () => {
     module: 'es2015',
   });
 
+  const outDir = path.resolve(config.paths.build, 'lib', 'ES6');
+
   return gulp
     .src([
       // we need to punt out es6-shim definitions, so we have to kind of
@@ -243,9 +250,11 @@ gulp.task('typescript:lib:ES6', () => {
       `!${ path.resolve(config.paths.typings, '**', 'es6-shim', 'index.d.ts') }`,
       path.resolve(config.paths.src, '**', '*.ts'),
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ], { base: 'src' })
+    ], { base: path.resolve(config.paths.src) })
+    .pipe(sourcemaps.init())
     .pipe(typescript(tsconfig))
-    .pipe(gulp.dest(path.resolve(config.paths.build, 'lib', 'ES6')));
+    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
+    .pipe(gulp.dest(outDir));
 });
 
 gulp.task('typescript:bundle', () => {
@@ -256,16 +265,19 @@ gulp.task('typescript:bundle', () => {
     outFile: files.bundle,
   });
 
+  const outDir = path.resolve(config.paths.build, 'bundle');
+
   return gulp
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, '**', '*.ts'),
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ])
+    ], { base: path.resolve(config.paths.src) })
+    .pipe(sourcemaps.init())
     .pipe(typescript(tsconfig))
-    .js
     .pipe(uglify())
-    .pipe(gulp.dest(path.resolve(config.paths.build, 'bundle')));
+    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
+    .pipe(gulp.dest(outDir));
 });
 
 gulp.task('typescript:typings', () => {
@@ -280,7 +292,8 @@ gulp.task('typescript:typings', () => {
 
   return gulp
     .src([
-      path.resolve(config.paths.src, 'rxobj.d.ts'),
+      path.resolve(config.paths.typings, 'index.d.ts'),
+      path.resolve(config.paths.src, 'rxobj.ts'),
     ])
     .pipe(typescript(tsconfig))
     .dts
@@ -294,6 +307,8 @@ gulp.task('typescript:test', () => {
     target: 'ES5',
   });
 
+  const outDir = path.resolve(config.paths.build);
+
   return gulp
     .src([
       path.resolve(config.paths.typings, 'index.d.ts'),
@@ -301,8 +316,10 @@ gulp.task('typescript:test', () => {
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
       path.resolve(config.paths.test, '**', '*.ts'),
     ], { base: '.' })
+    .pipe(sourcemaps.init())
     .pipe(typescript(tsconfig))
-    .pipe(gulp.dest(path.resolve(config.paths.build)));
+    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve('.') }))
+    .pipe(gulp.dest(outDir));
 });
 
 gulp.task('lint', [ 'lint:all' ]);
