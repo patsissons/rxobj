@@ -12,6 +12,7 @@ notifications:
     on_start: never     # options: [always|never|change] default: always
 script:
   - gulp dist
+after_success:
   - gulp coveralls:upload
 deploy:
   provider: npm
