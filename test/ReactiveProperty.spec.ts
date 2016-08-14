@@ -26,24 +26,6 @@ describe('ReactiveProperty', () => {
     });
   });
 
-  describe('name', () => {
-    it('can be assigned and read', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
-
-      prop.name = testValue;
-
-      prop.name.should.eql(testValue);
-    });
-
-    it('can be assigned only once', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
-
-      prop.name = testValue;
-
-      should.throw(() => prop.name = 'error');
-    });
-  });
-
   describe('value', () => {
     it('can act as a getter', () => {
       const prop = new ReactiveValueProperty(testOwner, testValue);

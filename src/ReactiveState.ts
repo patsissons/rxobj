@@ -76,6 +76,10 @@ export class ReactiveState<T> extends Subscription {
     }
   }
 
+  public get isReactive() {
+    return true;
+  }
+
   public get changing() {
     return this.changingObservable;
   }

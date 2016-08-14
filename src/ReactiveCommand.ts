@@ -3,7 +3,7 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
-interface ReactiveCommandEventValue<T> {
+export interface ReactiveCommandEventValue<T> {
   param: any;
   result: T;
 }
@@ -12,8 +12,8 @@ interface ReactiveCommandEventValue<T> {
 //       to always provide that type information when declaring a command, which
 //       is undesirable.
 
-export class ReactiveCommand<T> extends ReactiveState<ReactiveEvent<ReactiveCommand<T>, ReactiveCommandEventValue<T>>> {
-  constructor(protected executeAction: (param: any) => T, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
+export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<ReactiveCommand<TObj, TResult>, ReactiveCommandEventValue<TResult>>> {
+  constructor(public owner: TObj, protected executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
     super(errorScheduler);
 
     this.isExecutingSubject = new BehaviorSubject(false);
