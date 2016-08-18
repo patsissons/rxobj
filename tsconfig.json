@@ -29,6 +29,7 @@
     "./test/ReactiveApp.spec.ts",
     "./test/ReactiveCommand.spec.ts",
     "./test/ReactiveEvent.spec.ts",
+    "./test/ReactiveList.spec.ts",
     "./test/ReactiveObject.spec.ts",
     "./test/ReactiveProperty.spec.ts",
     "./test/Sanity.spec.ts",
