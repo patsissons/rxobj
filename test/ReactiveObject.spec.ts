@@ -180,6 +180,58 @@ describe('ReactiveObject', () => {
       obj.cmd.execute();
     });
   });
+
+  describe('list', () => {
+    class TestObject extends BasicReactiveObject {
+      public items = this.list<number>();
+    }
+
+    it('registers a member', () => {
+      const obj = new TestObject();
+
+      should.exist(obj.items);
+      obj.getMembers().length.should.eql(1);
+      obj.getMembers()[0].should.eql(obj.items);
+    });
+
+    it('can generate notifications from changing list properties', (done) => {
+      const obj = new TestObject();
+
+      obj.changing.subscribe(x => {
+        should.exist(x);
+        should.exist(x.source);
+        should.exist(x.value);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
+
+        x.source.should.equal(obj);
+        x.value.member.should.eql(obj.items);
+        x.value.memberName.should.eql('items');
+
+        done();
+      });
+
+      obj.items.push(1);
+    });
+
+    it('can generate notifications from changed list properties', (done) => {
+      const obj = new TestObject();
+
+      obj.changed.subscribe(x => {
+        should.exist(x);
+        should.exist(x.source);
+        should.exist(x.value);
+        should.exist(x.value.member);
+        should.exist(x.value.memberName);
+
+        x.source.should.equal(obj);
+        x.value.member.should.eql(obj.items);
+        x.value.memberName.should.eql('items');
+
+        done();
+      });
+
+      obj.items.push(1);
     });
   });
 });
