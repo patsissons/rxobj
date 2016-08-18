@@ -5,6 +5,7 @@ import { ReactiveState } from './ReactiveState';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveStreamProperty, ReactiveValueProperty } from './ReactiveProperty';
 import { ReactiveCommand } from './ReactiveCommand';
+import { ReactiveList } from './ReactiveList';
 
 export type ReactiveMember = ReactiveState<ReactiveEvent<ReactiveState<any>, any>>;
 
@@ -91,5 +92,13 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
     this.registerMember(cmd);
 
     return cmd;
+  }
+
+  protected list<TValue>(items?: TValue[], errorScheduler?: Scheduler) {
+    const list = new ReactiveList(this, items, errorScheduler);
+
+    this.registerMember(list);
+
+    return list;
   }
 }
