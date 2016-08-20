@@ -14,6 +14,18 @@ describe('ReactiveApp', () => {
       should.exist(ReactiveApp.defaultErrorHandler);
     });
 
+    it('should use console.error by default', () => {
+      // const sandbox = sinon.sandbox.create();
+      const stub = sandbox.stub(console, 'error');
+      const err = new Error('testing');
+
+      ReactiveApp.defaultErrorHandler.next(err);
+
+      stub.callCount.should.eql(1);
+      stub.calledWith(err);
+      sandbox.restore();
+    });
+
     it('should be extensible with a new subscriber', () => {
       const stub = sinon.stub();
 
