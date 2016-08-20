@@ -38,7 +38,7 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
   }
 
   public subscribe(observerOrNext: PartialObserver<T> | ((value: T) => void), error: (error: any) => void = ReactiveApp.defaultErrorHandler.next, complete?: () => void) {
-    if (this.defaultObserverSub) {
+    if (this.defaultObserverSub != null) {
       this.defaultObserverSub.unsubscribe();
       this.defaultObserverSub = undefined;
     }
