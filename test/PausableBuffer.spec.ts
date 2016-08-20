@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-// import * as sinon from 'sinon';
-import setup from './setup';
-setup(chai);
+import './setup';
 
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import '../src/Extensions';

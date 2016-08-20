@@ -1,7 +1,5 @@
-import * as chai from 'chai';
 import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should, sandbox } from './setup';
 
 import { Subscriber, Scheduler } from 'rxjs';
 import { ReactiveApp } from '../src/ReactiveApp';
