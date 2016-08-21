@@ -43,7 +43,7 @@ export class ReactiveStreamProperty<TObj, T> extends ReactiveProperty<TObj, T> {
 }
 
 export class ReactiveValueProperty<TObj, T> extends ReactiveProperty<TObj, T> {
-  constructor(owner: TObj, initialValue?: T, scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
+  constructor(owner: TObj, initialValue?: T, scheduler: Scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
     super(owner, initialValue, errorScheduler);
 
     this.valueHandler = new SubjectScheduler<T>(scheduler);
