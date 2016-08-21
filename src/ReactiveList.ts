@@ -79,6 +79,14 @@ export class ReactiveList<TObject, TValue> extends ReactiveState<ReactiveEvent<R
     return this.items.slice();
   }
 
+  public clear() {
+    this.reset();
+  }
+
+  public reset(...items: TValue[]) {
+    this.splice(0, this.items.length, ...items);
+  }
+
   // Array<TValue> Implementation
 
   get length() {
