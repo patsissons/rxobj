@@ -81,6 +81,56 @@ describe('ReactiveList', () => {
     });
   });
 
+  describe('clear', () => {
+    it('empties the array', () => {
+      const testArray = [ testValue ];
+      const list = new ReactiveList(testOwner, testArray);
+
+      list.clear();
+      list.asArray().length.should.eql(0);
+    });
+
+    it('generates a reset notification', (done) => {
+      const testArray = [ testValue ];
+      const list = new ReactiveList(testOwner, testArray);
+
+      list.changed
+        .mochaSubscribe(x => {
+          x.value.action.should.eql(ReactiveListChangeAction.Reset);
+
+          done();
+        }, done);
+
+      list.clear();
+    });
+  });
+
+  describe('reset', () => {
+    it('replaces the array', () => {
+      const array1 = [ 1 ];
+      const array2 = [ 2 ];
+      const list = new ReactiveList(testOwner, array1);
+
+      list.reset(...array2);
+      list.asArray().should.eql(array2);
+    });
+
+    it('generates a reset notification', (done) => {
+      const array1 = [ 1 ];
+      const array2 = [ 2 ];
+      const list = new ReactiveList(testOwner, array1);
+
+      list.changed
+        .mochaSubscribe(x => {
+          x.value.action.should.eql(ReactiveListChangeAction.Reset);
+
+          done();
+        }, done);
+
+      list.reset(...array2);
+    });
+  });
+
   describe('changing', () => {
     it('can generate notifications with the source and action', (done) => {
       const emptyArray = <string[]>[];
