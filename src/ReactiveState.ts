@@ -90,7 +90,7 @@ export class ReactiveState<T> extends Subscription {
 
   public get thrownErrors() {
     return this.thrownErrorsHandler
-      .getScheduledObservable();
+      .asObservable();
   }
 
   public areChangeNotificationsEnabled() {

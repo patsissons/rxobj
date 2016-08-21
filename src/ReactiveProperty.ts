@@ -50,13 +50,13 @@ export class ReactiveValueProperty<TObj, T> extends ReactiveProperty<TObj, T> {
 
     this.add(this.valueHandler);
 
-    this.initialize(this.valueHandler.getScheduledObservable());
+    this.initialize(this.valueHandler.asObservable());
   }
 
   protected valueHandler: SubjectScheduler<T>;
 
   public get source() {
-    return this.valueHandler.getScheduledObservable();
+    return this.valueHandler.asObservable();
   }
 
   public get value() {
