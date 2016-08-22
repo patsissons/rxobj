@@ -1,6 +1,6 @@
-// import * as chai from 'chai';
-// import * as sinon from 'sinon';
-// import * as sinonChai from 'sinon-chai';
+import * as chai from 'chai';
+import * as sinon from 'sinon';
+import * as sinonChai from 'sinon-chai';
 
 import 'es6-shim';
 
@@ -28,8 +28,18 @@ function mochaSubscribe<T>(observerOrNext?: (value: T) => void, done?: (error?: 
 
 Observable.prototype.mochaSubscribe = mochaSubscribe;
 
-export default function setup(chai: Chai.ChaiStatic) {
-  chai.use(require('sinon-chai'));
+chai.use(sinonChai);
 
-  return chai.should();
-}
+beforeEach(() => {
+  sandbox = sinon.sandbox.create();
+});
+
+afterEach(() => {
+  sandbox.restore();
+});
+
+export const should = chai.should();
+
+export let sandbox: Sinon.SinonSandbox;
+
+export default should;

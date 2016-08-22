@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should, sandbox } from './setup';
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {
@@ -22,7 +19,7 @@ describe('Sanity Tests', () => {
 
   describe('for sinon', () => {
     it('can create stubs', () => {
-      const stub = sinon.stub();
+      const stub = sandbox.stub();
 
       stub();
 
@@ -32,7 +29,7 @@ describe('Sanity Tests', () => {
 
   describe('for sinon-chai', () => {
     it('can use should to assert sinon properties', () => {
-      const stub = sinon.stub();
+      const stub = sandbox.stub();
 
       stub();
 

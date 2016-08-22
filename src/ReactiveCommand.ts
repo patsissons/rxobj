@@ -2,6 +2,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
+import { SubjectScheduler } from './SubjectScheduler';
 
 export interface ReactiveCommandEventValue<T> {
   param: any;
@@ -13,12 +14,13 @@ export interface ReactiveCommandEventValue<T> {
 //       is undesirable.
 
 export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<ReactiveCommand<TObj, TResult>, ReactiveCommandEventValue<TResult>>> {
-  constructor(public owner: TObj, protected executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
+  constructor(public owner: TObj, protected executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(errorScheduler);
 
     this.isExecutingSubject = new BehaviorSubject(false);
+    this.isExecutingScheduledSubject = new SubjectScheduler(scheduler, undefined, this.isExecutingSubject);
 
-    this.add(this.isExecutingSubject);
+    this.add(this.isExecutingScheduledSubject);
 
     if (canExecute == null) {
       canExecute = Observable.of(true);
@@ -40,16 +42,17 @@ export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<
     this.add(
       this.changed
         .subscribe(x => {
-          this.isExecutingSubject.next(false);
+          this.isExecutingScheduledSubject.next(false);
         }, this.thrownErrorsHandler.next)
     );
   }
 
   private isExecutingSubject: BehaviorSubject<boolean>;
+  private isExecutingScheduledSubject: SubjectScheduler<boolean>;
   private canExecuteObservable: Observable<boolean>;
 
   public get isExecuting() {
-    return this.isExecutingSubject
+    return this.isExecutingScheduledSubject
       .asObservable();
   }
 
@@ -68,7 +71,7 @@ export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<
       throw 'Command Execution is Already in Progress';
     }
 
-    this.isExecutingSubject.next(true);
+    this.isExecutingScheduledSubject.next(true);
 
     this.notifyPropertyChanging(() => new ReactiveEvent(this, { param, result: null }));
   }

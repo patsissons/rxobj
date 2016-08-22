@@ -78,8 +78,8 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
     return prop;
   }
 
-  protected property<T>(initialValue?: T) {
-    const prop = new ReactiveValueProperty(this, initialValue);
+  protected property<T>(initialValue?: T, scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    const prop = new ReactiveValueProperty(this, initialValue, scheduler, errorScheduler);
 
     this.registerMember(prop);
 

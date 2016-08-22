@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-// import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should } from './setup';
 
 import { Subject } from 'rxjs';
 import { ReactiveObject } from '../src/ReactiveObject';

@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-// import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveList, ReactiveListChangeAction } from '../src/ReactiveList';
@@ -81,6 +78,56 @@ describe('ReactiveList', () => {
 
       firstArray.length.should.not.eql(secondArray.length);
       firstArray.should.not.eql(secondArray);
+    });
+  });
+
+  describe('clear', () => {
+    it('empties the array', () => {
+      const testArray = [ testValue ];
+      const list = new ReactiveList(testOwner, testArray);
+
+      list.clear();
+      list.asArray().length.should.eql(0);
+    });
+
+    it('generates a reset notification', (done) => {
+      const testArray = [ testValue ];
+      const list = new ReactiveList(testOwner, testArray);
+
+      list.changed
+        .mochaSubscribe(x => {
+          x.value.action.should.eql(ReactiveListChangeAction.Reset);
+
+          done();
+        }, done);
+
+      list.clear();
+    });
+  });
+
+  describe('reset', () => {
+    it('replaces the array', () => {
+      const array1 = [ 1 ];
+      const array2 = [ 2 ];
+      const list = new ReactiveList(testOwner, array1);
+
+      list.reset(...array2);
+      list.asArray().should.eql(array2);
+    });
+
+    it('generates a reset notification', (done) => {
+      const array1 = [ 1 ];
+      const array2 = [ 2 ];
+      const list = new ReactiveList(testOwner, array1);
+
+      list.changed
+        .mochaSubscribe(x => {
+          x.value.action.should.eql(ReactiveListChangeAction.Reset);
+
+          done();
+        }, done);
+
+      list.reset(...array2);
     });
   });
 

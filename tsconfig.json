@@ -33,6 +33,7 @@
     "./test/ReactiveObject.spec.ts",
     "./test/ReactiveProperty.spec.ts",
     "./test/Sanity.spec.ts",
-    "./test/setup.ts"
+    "./test/setup.ts",
+    "./test/SubjectScheduler.spec.ts"
   ]
 }

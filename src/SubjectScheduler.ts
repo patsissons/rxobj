@@ -11,7 +11,7 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
     this.add(this.subject);
 
     if (this.defaultObserverOrNext != null) {
-      this.defaultObserverSub = this.getScheduledObservable()
+      this.defaultObserverSub = this.asObservable()
         .subscribe(defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next);
     }
   }
@@ -31,28 +31,28 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
     this.subject.complete();
   }
 
-  public getScheduledObservable(): Observable<T> {
+  public asObservable(): Observable<T> {
     return this.scheduler == null ?
       this.subject.asObservable() :
       this.subject.observeOn(this.scheduler);
   }
 
   public subscribe(observerOrNext: PartialObserver<T> | ((value: T) => void), error: (error: any) => void = ReactiveApp.defaultErrorHandler.next, complete?: () => void) {
-    if (this.defaultObserverSub) {
+    if (this.defaultObserverSub != null) {
       this.defaultObserverSub.unsubscribe();
       this.defaultObserverSub = undefined;
     }
 
     ++this.observerRefCount;
 
-    const sub = this.getScheduledObservable()
+    const sub = this.asObservable()
       .subscribe(observerOrNext, error, complete);
 
     sub.add(new Subscription(() => {
       if (--this.observerRefCount <= 0 && this.defaultObserverOrNext != null) {
         this.observerRefCount = 0;
 
-        this.defaultObserverSub = this.getScheduledObservable()
+        this.defaultObserverSub = this.asObservable()
           .subscribe(this.defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next);
       }
     }));
