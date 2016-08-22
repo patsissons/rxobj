@@ -14,10 +14,6 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
     this.currentValue = initialValue;
   }
 
-  // this will get filled in by the owner when it generates its first
-  // notification.
-  private propertyName: string;
-
   protected currentValue: T;
 
   protected initialize(source: Observable<T>) {
@@ -31,18 +27,6 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
         this.notifyPropertyChanged(() => new ReactiveEvent(this, this.currentValue));
       }, this.thrownErrorsHandler.next)
     );
-  }
-
-  public set name(propertyName: string) {
-    if (this.propertyName != null) {
-      throw 'Manually setting a reactive property name is not allowed';
-    }
-
-    this.propertyName = propertyName;
-  }
-
-  public get name() {
-    return this.propertyName;
   }
 
   public get value() {
@@ -59,20 +43,20 @@ export class ReactiveStreamProperty<TObj, T> extends ReactiveProperty<TObj, T> {
 }
 
 export class ReactiveValueProperty<TObj, T> extends ReactiveProperty<TObj, T> {
-  constructor(owner: TObj, initialValue?: T, scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
+  constructor(owner: TObj, initialValue?: T, scheduler: Scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
     super(owner, initialValue, errorScheduler);
 
     this.valueHandler = new SubjectScheduler<T>(scheduler);
 
     this.add(this.valueHandler);
 
-    this.initialize(this.valueHandler.getScheduledObservable());
+    this.initialize(this.valueHandler.asObservable());
   }
 
   protected valueHandler: SubjectScheduler<T>;
 
   public get source() {
-    return this.valueHandler.getScheduledObservable();
+    return this.valueHandler.asObservable();
   }
 
   public get value() {

@@ -1,7 +1,5 @@
-import * as chai from 'chai';
 import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should, sandbox } from './setup';
 
 import { Subscriber, Scheduler } from 'rxjs';
 import { ReactiveApp } from '../src/ReactiveApp';
@@ -14,6 +12,18 @@ describe('ReactiveApp', () => {
   describe('defaultErrorHandler', () => {
     it('should be initialized by default', () => {
       should.exist(ReactiveApp.defaultErrorHandler);
+    });
+
+    it('should use console.error by default', () => {
+      // const sandbox = sinon.sandbox.create();
+      const stub = sandbox.stub(console, 'error');
+      const err = new Error('testing');
+
+      ReactiveApp.defaultErrorHandler.next(err);
+
+      stub.callCount.should.eql(1);
+      stub.calledWith(err);
+      sandbox.restore();
     });
 
     it('should be extensible with a new subscriber', () => {

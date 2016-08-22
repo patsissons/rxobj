@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "target": "es5",
+    "sourceMap": true,
     "module": "commonjs",
     "noImplicitAny": true
   },
@@ -16,7 +17,9 @@
     "./src/Extensions.ts",
     "./src/PausableBuffer.ts",
     "./src/ReactiveApp.ts",
+    "./src/ReactiveCommand.ts",
     "./src/ReactiveEvent.ts",
+    "./src/ReactiveList.ts",
     "./src/ReactiveObject.ts",
     "./src/ReactiveProperty.ts",
     "./src/ReactiveState.ts",
@@ -24,10 +27,13 @@
     "./src/SubjectScheduler.ts",
     "./test/PausableBuffer.spec.ts",
     "./test/ReactiveApp.spec.ts",
+    "./test/ReactiveCommand.spec.ts",
     "./test/ReactiveEvent.spec.ts",
+    "./test/ReactiveList.spec.ts",
     "./test/ReactiveObject.spec.ts",
     "./test/ReactiveProperty.spec.ts",
     "./test/Sanity.spec.ts",
-    "./test/setup.ts"
+    "./test/setup.ts",
+    "./test/SubjectScheduler.spec.ts"
   ]
 }

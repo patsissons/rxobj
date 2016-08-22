@@ -4,7 +4,16 @@ node_js:
   - '4'
 notifications:
   email: false
-script: npm test
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/ef086db015aeae5a8e34
+    on_success: change  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: never     # options: [always|never|change] default: always
+script:
+  - gulp dist
+after_success:
+  - gulp coveralls:upload
 deploy:
   provider: npm
   email: patricksissons@gmail.com

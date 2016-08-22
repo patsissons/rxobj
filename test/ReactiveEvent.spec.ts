@@ -1,6 +1,4 @@
-import * as chai from 'chai';
-import setup from './setup';
-setup(chai);
+import './setup';
 
 import { ReactiveEvent } from '../src/ReactiveEvent';
 

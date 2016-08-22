@@ -3,77 +3,102 @@ import { Scheduler } from 'rxjs/Scheduler';
 
 import { ReactiveState } from './ReactiveState';
 import { ReactiveEvent } from './ReactiveEvent';
-import { ReactiveProperty, ReactiveStreamProperty, ReactiveValueProperty } from './ReactiveProperty';
+import { ReactiveStreamProperty, ReactiveValueProperty } from './ReactiveProperty';
+import { ReactiveCommand } from './ReactiveCommand';
+import { ReactiveList } from './ReactiveList';
+
+export type ReactiveMember = ReactiveState<ReactiveEvent<ReactiveState<any>, any>>;
 
 export interface ReactivePropertyEventValue {
-  property: ReactiveProperty<ReactiveObject, any>;
-  propertyName: string;
+  member: ReactiveState<any>;
+  memberName: string;
+}
+
+// this is an internal interface
+interface NamedReactiveMember extends ReactiveMember {
+  name: string;
 }
 
 export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<ReactiveObject, ReactivePropertyEventValue>> {
   constructor(errorScheduler?: Scheduler) {
     super(errorScheduler);
 
-    this.properties = [];
+    this.members = [];
   }
 
-  protected properties: ReactiveProperty<ReactiveObject, any>[];
+  protected members: ReactiveMember[];
 
-  private getPropertyName(prop: ReactiveProperty<ReactiveObject, any>) {
-    if (prop.name == null) {
+  private getMemberName(member: NamedReactiveMember) {
+    if (member.name == null) {
       this.resolvePropertyNames();
     }
 
-    return prop.name;
+    return member.name;
   }
 
   private resolvePropertyNames() {
     Object
       .getOwnPropertyNames(this)
-      .map(name => ({ name, prop: <ReactiveProperty<ReactiveObject, any>>(<any>this)[name] }))
-      .filter(x => x.prop != null && x.prop.owner === this && x.prop.name == null)
+      .map(name => ({ name, member: <NamedReactiveMember>(<any>this)[name] }))
+      .filter(x => x.member != null && x.member.isReactive === true && x.member.name == null)
       .forEach(x => {
-        x.prop.name = x.name;
+        x.member.name = x.name;
       });
   }
 
-  protected registerProperty(prop: ReactiveProperty<ReactiveObject, any>) {
+  protected registerMember(member: ReactiveMember) {
     this.add(
-      prop.changing
+      member.changing
         .subscribe(x => {
           this.notifyPropertyChanging(() => new ReactiveEvent(this, {
-            property: x.source,
-            propertyName: this.getPropertyName(x.source),
+            member: x.source,
+            memberName: this.getMemberName(<NamedReactiveMember>x.source),
           }));
         }, this.thrownErrorsHandler.next)
     );
 
     this.add(
-      prop.changed
+      member.changed
         .subscribe(x => {
           this.notifyPropertyChanged(() => new ReactiveEvent(this, {
-            property: x.source,
-            propertyName: this.getPropertyName(x.source),
+            member: x.source,
+            memberName: this.getMemberName(<NamedReactiveMember>x.source),
           }));
         }, this.thrownErrorsHandler.next)
     );
 
-    this.properties.push(prop);
+    this.members.push(member);
   }
 
   protected propertyFrom<T>(source: Observable<T>, initialValue?: T, errorScheduler?: Scheduler) {
     const prop = new ReactiveStreamProperty(source, this, initialValue, errorScheduler);
 
-    this.registerProperty(prop);
+    this.registerMember(prop);
 
     return prop;
   }
 
-  protected property<T>(initialValue?: T) {
-    const prop = new ReactiveValueProperty(this, initialValue);
+  protected property<T>(initialValue?: T, scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    const prop = new ReactiveValueProperty(this, initialValue, scheduler, errorScheduler);
 
-    this.registerProperty(prop);
+    this.registerMember(prop);
 
     return prop;
+  }
+
+  protected command<TResult>(executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
+    const cmd = new ReactiveCommand(this, executeAction, canExecute, errorScheduler);
+
+    this.registerMember(cmd);
+
+    return cmd;
+  }
+
+  protected list<TValue>(items?: TValue[], errorScheduler?: Scheduler) {
+    const list = new ReactiveList(this, items, errorScheduler);
+
+    this.registerMember(list);
+
+    return list;
   }
 }

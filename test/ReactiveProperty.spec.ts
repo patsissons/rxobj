@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-// import * as sinon from 'sinon';
-import setup from './setup';
-const should = setup(chai);
+import { should } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveStreamProperty, ReactiveValueProperty } from '../src/ReactiveProperty';
@@ -23,24 +20,6 @@ describe('ReactiveProperty', () => {
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
-    });
-  });
-
-  describe('name', () => {
-    it('can be assigned and read', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
-
-      prop.name = testValue;
-
-      prop.name.should.eql(testValue);
-    });
-
-    it('can be assigned only once', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
-
-      prop.name = testValue;
-
-      should.throw(() => prop.name = 'error');
     });
   });
 
@@ -211,6 +190,44 @@ describe('ReactiveProperty', () => {
 
       subject.value.should.eql(1);
     });
+
+    it('handles multiple calls', () => {
+      const prop = new ReactiveValueProperty(testOwner, 0);
+      const subject = new BehaviorSubject<number>(0);
+
+      prop.changed
+        .map(x => x.value)
+        .subscribe(subject);
+
+      subject.value.should.eql(0);
+
+      prop.value = 1;
+      subject.value.should.eql(1);
+
+      Observable.using(
+        () => prop.suppressChangeNotifications(),
+        sub1 => {
+          prop.value = 2;
+          subject.value.should.eql(1);
+
+          Observable.using(
+            () => prop.suppressChangeNotifications(),
+            sub2 => {
+              prop.value = 3;
+              subject.value.should.eql(1);
+
+              sub2.unsubscribe();
+            }
+          ).subscribe();
+
+          subject.value.should.eql(1);
+
+          sub1.unsubscribe();
+        }
+      ).subscribe();
+
+      subject.value.should.eql(1);
+    });
   });
 
   describe('delayChangeNotifications', () => {
@@ -244,6 +261,49 @@ describe('ReactiveProperty', () => {
           subject.value.should.eql(1);
 
           x.unsubscribe();
+        }
+      ).subscribe();
+    });
+
+    it('handles multiple calls', (done) => {
+      const prop = new ReactiveValueProperty(testOwner, 0);
+      const subject = new BehaviorSubject<number>(0);
+
+      prop.changed
+        .map(x => x.value)
+        .subscribe(subject);
+
+      subject.value.should.eql(0);
+
+      prop.value = 1;
+      subject.value.should.eql(1);
+
+      subject
+        .subscribe(x => {
+          if (x === 3) {
+            done();
+          }
+        });
+
+      Observable.using(
+        () => prop.delayChangeNotifications(),
+        sub1 => {
+          prop.value = 2;
+          subject.value.should.eql(1);
+
+          Observable.using(
+            () => prop.delayChangeNotifications(),
+            sub2 => {
+              prop.value = 3;
+              subject.value.should.eql(1);
+
+              sub2.unsubscribe();
+            }
+          ).subscribe();
+
+          subject.value.should.eql(1);
+
+          sub1.unsubscribe();
         }
       ).subscribe();
     });
