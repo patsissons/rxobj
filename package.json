@@ -1,12 +1,16 @@
 {
   "name": "rxobj",
-  "version": "0.1.3",
+  "version": "2.0.0",
   "title": "Reactive Object Framework",
-  "description": "Library for building reactive objects with reactive properties and commands using RxJS",
+  "description": "Library for building MVVM style reactive objects with reactive properties, commands, and lists using RxJS",
   "keywords": [
     "reactive",
-    "rx",
-    "rxjs"
+    "ReactiveX",
+    "Rx",
+    "RxJS",
+    "Observables",
+    "ReactiveExtensions",
+    "MVVM"
   ],
   "main": "index.js",
   "scripts": {
