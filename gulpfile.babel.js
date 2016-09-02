@@ -134,7 +134,7 @@ Tasks:
   ${ util.colors.cyan('gulp watch') } will watch for changes in ${ util.colors.magenta(config.paths.src) } and ${ util.colors.magenta(config.paths.test) } and run mocha (alias for ${ util.colors.cyan('watch:mocha') })
   ${ util.colors.cyan('gulp watch:lint') } will watch for changes in ${ util.colors.magenta(config.paths.src) } and ${ util.colors.magenta(config.paths.test) } and run the linters
 
-  ${ util.colors.cyan('gulp typescript') } will compile typescript files to ${ util.colors.magenta(config.dirs.build) }
+  ${ util.colors.cyan('gulp typescript') } will compile typescript files to ${ util.colors.magenta(config.paths.build) }
        ${ [ 'typings', 'lib', 'lib:ES5', 'lib:ES6', 'all' ].map((x) => util.colors.cyan(`typescript:${ x }`)).join(', ') }
 `);
   /* eslint-enable max-len */
