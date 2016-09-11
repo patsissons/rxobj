@@ -3,15 +3,21 @@ import { Scheduler } from 'rxjs/Scheduler';
 
 import { ReactiveState } from './ReactiveState';
 import { ReactiveEvent } from './ReactiveEvent';
-import { ReactiveStreamProperty, ReactiveValueProperty } from './ReactiveProperty';
+import { ReactiveProperty } from './ReactiveProperty';
 import { ReactiveCommand } from './ReactiveCommand';
 import { ReactiveList } from './ReactiveList';
 
 export type ReactiveMember = ReactiveState<ReactiveEvent<ReactiveState<any>, any>>;
 
-export interface ReactivePropertyEventValue {
+export interface ReactiveMemberEventValue {
   member: ReactiveState<any>;
   memberName: string;
+}
+
+// this interface is exported internally but not to the surface API
+// we use this interface to define how extensions can internally register members
+export interface ReactiveMemberContainer {
+  registerMember(member: ReactiveMember): void;
 }
 
 // this is an internal interface
@@ -19,9 +25,9 @@ interface NamedReactiveMember extends ReactiveMember {
   name: string;
 }
 
-export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<ReactiveObject, ReactivePropertyEventValue>> {
-  constructor(errorScheduler?: Scheduler) {
-    super(errorScheduler);
+export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<ReactiveObject, ReactiveMemberEventValue>> {
+  constructor(scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(scheduler, errorScheduler);
 
     this.members = [];
   }
@@ -46,7 +52,7 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
       });
   }
 
-  protected registerMember(member: ReactiveMember) {
+  private registerMember(member: ReactiveMember) {
     this.add(
       member.changing
         .subscribe(x => {
@@ -70,32 +76,24 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveEvent<Reactiv
     this.members.push(member);
   }
 
-  protected propertyFrom<T>(source: Observable<T>, initialValue?: T, errorScheduler?: Scheduler) {
-    const prop = new ReactiveStreamProperty(source, this, initialValue, errorScheduler);
+  protected property<TValue>(initialValue?: TValue, scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    const prop = new ReactiveProperty(this, initialValue, undefined, scheduler, errorScheduler);
 
     this.registerMember(prop);
 
     return prop;
   }
 
-  protected property<T>(initialValue?: T, scheduler?: Scheduler, errorScheduler?: Scheduler) {
-    const prop = new ReactiveValueProperty(this, initialValue, scheduler, errorScheduler);
-
-    this.registerMember(prop);
-
-    return prop;
-  }
-
-  protected command<TResult>(executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, errorScheduler?: Scheduler) {
-    const cmd = new ReactiveCommand(this, executeAction, canExecute, errorScheduler);
+  protected command<TParam, TResult>(executeAction: (param: TParam) => Observable<TResult>, canExecute?: Observable<boolean>, scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    const cmd = new ReactiveCommand(this, executeAction, canExecute, scheduler, errorScheduler);
 
     this.registerMember(cmd);
 
     return cmd;
   }
 
-  protected list<TValue>(items?: TValue[], errorScheduler?: Scheduler) {
-    const list = new ReactiveList(this, items, errorScheduler);
+  protected list<TValue>(items?: TValue[], scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    const list = new ReactiveList(this, items, scheduler, errorScheduler);
 
     this.registerMember(list);
 

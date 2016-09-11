@@ -1,22 +1,20 @@
-import { Observable, Scheduler as Schedulers } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
-import { SubjectScheduler } from './SubjectScheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
-// we need to import this to satify the compiler
-import { QueueScheduler } from 'rxjs/scheduler/QueueScheduler';
+export class ReactiveProperty<TObj, TValue> extends ReactiveState<ReactiveEvent<ReactiveProperty<TObj, TValue>, TValue>> {
+  constructor(public owner: TObj, initialValue?: TValue, protected source: Observable<TValue> = new Subject<TValue>(), scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(scheduler, errorScheduler);
 
-export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEvent<ReactiveProperty<TObj, T>, T>> {
-  constructor(public owner: TObj, initialValue?: T, errorScheduler?: Scheduler) {
-    super(errorScheduler);
+    if (source instanceof Subject) {
+      this.add(<Subject<TValue>>source);
 
-    this.currentValue = initialValue;
-  }
+      this.canWrite = true;
+    } else {
+      this.canWrite = false;
+    }
 
-  protected currentValue: T;
-
-  protected initialize(source: Observable<T>) {
     this.add(source
       .distinctUntilChanged()
       .subscribe(x => {
@@ -27,43 +25,22 @@ export abstract class ReactiveProperty<TObj, T> extends ReactiveState<ReactiveEv
         this.notifyPropertyChanged(() => new ReactiveEvent(this, this.currentValue));
       }, this.thrownErrorsHandler.next)
     );
+
+    this.currentValue = initialValue;
   }
 
-  public get value() {
-    return this.currentValue;
-  }
-}
-
-export class ReactiveStreamProperty<TObj, T> extends ReactiveProperty<TObj, T> {
-  constructor(public source: Observable<T>, owner: TObj, initialValue?: T, errorScheduler?: Scheduler) {
-    super(owner, initialValue, errorScheduler);
-
-    this.initialize(source);
-  }
-}
-
-export class ReactiveValueProperty<TObj, T> extends ReactiveProperty<TObj, T> {
-  constructor(owner: TObj, initialValue?: T, scheduler: Scheduler = <QueueScheduler>Schedulers.queue, errorScheduler?: Scheduler) {
-    super(owner, initialValue, errorScheduler);
-
-    this.valueHandler = new SubjectScheduler<T>(scheduler);
-
-    this.add(this.valueHandler);
-
-    this.initialize(this.valueHandler.asObservable());
-  }
-
-  protected valueHandler: SubjectScheduler<T>;
-
-  public get source() {
-    return this.valueHandler.asObservable();
-  }
+  protected currentValue: TValue;
+  protected canWrite: boolean;
 
   public get value() {
     return this.currentValue;
   }
 
-  public set value(value: T) {
-    this.valueHandler.next(value);
+  public set value(value: TValue) {
+    if (this.canWrite) {
+      (<Subject<TValue>>this.source).next(value);
+    } else {
+      this.thrownErrorsHandler.next(new Error('Cannot Modify Read Only Property'));
+    }
   }
 }

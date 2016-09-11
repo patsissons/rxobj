@@ -4,17 +4,28 @@ import { ReactiveApp } from './ReactiveApp';
 import { SubjectScheduler } from './SubjectScheduler';
 
 function dedup<T>(batch: T[]) {
-  // TODO: implement
-  return batch;
+  const result: T[] = [];
+  let last: T = undefined;
+
+  batch
+    .forEach((x, i) => {
+      if (i === 0 || x !== last) {
+        result.push(x);
+      }
+
+      last = x;
+    });
+
+  return result;
 }
 
-export class ReactiveState<T> extends Subscription {
-  constructor(errorScheduler?: Scheduler) {
+export class ReactiveState<TValue> extends Subscription {
+  constructor(scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super();
 
     this.startDelayNotificationsSubject = new Subject<any>();
-    this.changingSubject = new Subject<T>();
-    this.changedSubject = new Subject<T>();
+    this.changingSubject = new SubjectScheduler<TValue>(scheduler);
+    this.changedSubject = new SubjectScheduler<TValue>(scheduler);
     this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler);
 
     this.add(this.startDelayNotificationsSubject);
@@ -23,6 +34,7 @@ export class ReactiveState<T> extends Subscription {
     this.add(this.thrownErrorsHandler);
 
     this.changingObservable = this.changingSubject
+      .asObservable()
       .pausableBuffer(
         this.startDelayNotificationsSubject
           .map(() => this.areChangeNotificationsDelayed() === true),
@@ -32,6 +44,7 @@ export class ReactiveState<T> extends Subscription {
       .refCount();
 
     this.changedObservable = this.changedSubject
+      .asObservable()
       .pausableBuffer(
         this.startDelayNotificationsSubject
           .map(() => this.areChangeNotificationsDelayed() === true),
@@ -45,14 +58,14 @@ export class ReactiveState<T> extends Subscription {
   private changeNotificationsDelayed = 0;
   private startDelayNotificationsSubject: Subject<any>;
 
-  protected changingSubject: Subject<T>;
-  protected changedSubject: Subject<T>;
+  protected changingSubject: SubjectScheduler<TValue>;
+  protected changedSubject: SubjectScheduler<TValue>;
 
   protected thrownErrorsHandler: SubjectScheduler<Error>;
-  protected changingObservable: Observable<T>;
-  protected changedObservable: Observable<T>;
+  protected changingObservable: Observable<TValue>;
+  protected changedObservable: Observable<TValue>;
 
-  protected notifyPropertyChanging(changing: () => T) {
+  protected notifyPropertyChanging(changing: () => TValue) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -60,7 +73,7 @@ export class ReactiveState<T> extends Subscription {
     this.notifyObservable(changing, this.changingSubject);
   }
 
-  protected notifyPropertyChanged(changed: () => T) {
+  protected notifyPropertyChanged(changed: () => TValue) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -68,7 +81,7 @@ export class ReactiveState<T> extends Subscription {
     this.notifyObservable(changed, this.changedSubject);
   }
 
-  protected notifyObservable(change: () => T, subject: Subject<T>) {
+  protected notifyObservable(change: () => TValue, subject: SubjectScheduler<TValue>) {
     try {
       subject.next(change.apply(this));
     } catch (err) {
@@ -89,8 +102,7 @@ export class ReactiveState<T> extends Subscription {
   }
 
   public get thrownErrors() {
-    return this.thrownErrorsHandler
-      .asObservable();
+    return this.thrownErrorsHandler;
   }
 
   public areChangeNotificationsEnabled() {

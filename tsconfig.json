@@ -14,8 +14,6 @@
   ],
   "files": [
     "./typings/index.d.ts",
-    "./src/Extensions.ts",
-    "./src/PausableBuffer.ts",
     "./src/ReactiveApp.ts",
     "./src/ReactiveCommand.ts",
     "./src/ReactiveEvent.ts",
@@ -25,7 +23,6 @@
     "./src/ReactiveState.ts",
     "./src/rxobj.ts",
     "./src/SubjectScheduler.ts",
-    "./test/PausableBuffer.spec.ts",
     "./test/ReactiveApp.spec.ts",
     "./test/ReactiveCommand.spec.ts",
     "./test/ReactiveEvent.spec.ts",

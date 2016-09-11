@@ -4,8 +4,8 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { PartialObserver } from 'rxjs/Observer';
 import { ReactiveApp } from './ReactiveApp';
 
-export class SubjectScheduler<T> extends Subscription implements Subscribable<T> {
-  constructor(protected scheduler: Scheduler, protected defaultObserverOrNext?: PartialObserver<T> | ((value: T) => void), protected subject = new Subject<T>()) {
+export class SubjectScheduler<TValue> extends Subscription implements Subscribable<TValue> {
+  constructor(protected scheduler: Scheduler, protected defaultObserverOrNext?: PartialObserver<TValue> | ((value: TValue) => void), protected subject = new Subject<TValue>()) {
     super();
 
     this.add(this.subject);
@@ -19,7 +19,7 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
   protected defaultObserverSub: Subscription;
   protected observerRefCount = 0;
 
-  public next(value?: T) {
+  public next(value?: TValue) {
     this.subject.next(value);
   }
 
@@ -31,13 +31,13 @@ export class SubjectScheduler<T> extends Subscription implements Subscribable<T>
     this.subject.complete();
   }
 
-  public asObservable(): Observable<T> {
+  public asObservable(): Observable<TValue> {
     return this.scheduler == null ?
       this.subject.asObservable() :
       this.subject.observeOn(this.scheduler);
   }
 
-  public subscribe(observerOrNext: PartialObserver<T> | ((value: T) => void), error: (error: any) => void = ReactiveApp.defaultErrorHandler.next, complete?: () => void) {
+  public subscribe(observerOrNext?: PartialObserver<TValue> | ((value: TValue) => void), error: (error: any) => void = ReactiveApp.defaultErrorHandler.next, complete?: () => void) {
     if (this.defaultObserverSub != null) {
       this.defaultObserverSub.unsubscribe();
       this.defaultObserverSub = undefined;
