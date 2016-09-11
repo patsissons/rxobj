@@ -1,7 +1,7 @@
 import { should } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
-import { ReactiveStreamProperty, ReactiveValueProperty } from '../src/ReactiveProperty';
+import { ReactiveProperty } from '../src/ReactiveProperty';
 
 describe('ReactiveProperty', () => {
   const testOwner = new Object();
@@ -9,14 +9,14 @@ describe('ReactiveProperty', () => {
 
   describe('constructor', () => {
     it('stores the owner', () => {
-      const prop = new ReactiveValueProperty(testOwner);
+      const prop = new ReactiveProperty(testOwner, null);
 
       should.exist(prop.owner);
       prop.owner.should.equal(testOwner);
     });
 
     it('can start with an initial value', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
@@ -25,7 +25,7 @@ describe('ReactiveProperty', () => {
 
   describe('value', () => {
     it('can act as a getter', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
@@ -34,7 +34,7 @@ describe('ReactiveProperty', () => {
 
   describe('changing', () => {
     it('can generate notifications with the source and incoming value', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changing.subscribe(x => {
         should.exist(x);
@@ -51,7 +51,7 @@ describe('ReactiveProperty', () => {
     });
 
     it('can generate notifications before a value change', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changing.subscribe(x => {
         x.source.value.should.eql('');
@@ -66,7 +66,7 @@ describe('ReactiveProperty', () => {
 
   describe('changed', () => {
     it('can generate notifications with the source and incoming value', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
         should.exist(x);
@@ -83,7 +83,7 @@ describe('ReactiveProperty', () => {
     });
 
     it('can generate notifications after a value change', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
         x.source.value.should.eql(testValue);
@@ -98,7 +98,7 @@ describe('ReactiveProperty', () => {
 
   describe('thrownErrors', () => {
     it('can catch errors in notification handlers', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
         throw 'testError';
@@ -117,13 +117,13 @@ describe('ReactiveProperty', () => {
 
   describe('areChangeNotificationsEnabled', () => {
     it('defaults to true', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       prop.areChangeNotificationsEnabled().should.be.true;
     });
 
     it('is false when suppressed and true otherwise', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       Observable.using(
         () => prop.suppressChangeNotifications(),
@@ -140,13 +140,13 @@ describe('ReactiveProperty', () => {
 
   describe('areChangeNotificationsDelayed', () => {
     it('defaults to false', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       prop.areChangeNotificationsDelayed().should.be.false;
     });
 
     it('is true when delayed and false otherwise', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       Observable.using(
         () => prop.delayChangeNotifications(),
@@ -163,7 +163,7 @@ describe('ReactiveProperty', () => {
 
   describe('suppressChangeNotifications', () => {
     it('prevents change notifications completely when suppressed', () => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
+      const prop = new ReactiveProperty(testOwner, 0);
       const subject = new BehaviorSubject<number>(0);
 
       prop.changed
@@ -192,7 +192,7 @@ describe('ReactiveProperty', () => {
     });
 
     it('handles multiple calls', () => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
+      const prop = new ReactiveProperty(testOwner, 0);
       const subject = new BehaviorSubject<number>(0);
 
       prop.changed
@@ -232,7 +232,7 @@ describe('ReactiveProperty', () => {
 
   describe('delayChangeNotifications', () => {
     it('delays change notifications until disabled', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
+      const prop = new ReactiveProperty(testOwner, 0);
       const subject = new BehaviorSubject<number>(0);
 
       prop.changed
@@ -266,7 +266,7 @@ describe('ReactiveProperty', () => {
     });
 
     it('handles multiple calls', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
+      const prop = new ReactiveProperty(testOwner, 0);
       const subject = new BehaviorSubject<number>(0);
 
       prop.changed
@@ -309,38 +309,38 @@ describe('ReactiveProperty', () => {
     });
   });
 
-  describe('ReactiveStreamProperty', () => {
-    describe('constructor', () => {
-      it('initializes with an observable source', () => {
-        const source = Observable.of(testValue);
-        const prop = new ReactiveStreamProperty(source, testOwner);
+  // describe('ReactiveStreamProperty', () => {
+  //   describe('constructor', () => {
+  //     it('initializes with an observable source', () => {
+  //       const source = Observable.of(testValue);
+  //       const prop = new ReactiveProperty(testOwner, undefined, source);
 
-        should.exist(prop.source);
-        prop.source.should.equal(source);
-        should.exist(prop.value);
-        prop.value.should.eql(testValue);
-      });
-    });
-  });
+  //       should.exist(prop.source);
+  //       prop.source.should.equal(source);
+  //       should.exist(prop.value);
+  //       prop.value.should.eql(testValue);
+  //     });
+  //   });
+  // });
 
-  describe('ReactiveValueProperty', () => {
-    describe('constructor', () => {
-      it('initializes with a value handler source', () => {
-        const prop = new ReactiveValueProperty(testOwner);
+  // describe('ReactiveValueProperty', () => {
+  //   describe('constructor', () => {
+  //     it('initializes with a value handler source', () => {
+  //       const prop = new ReactiveProperty(testOwner);
 
-        should.exist(prop.source);
-      });
-    });
+  //       should.exist(prop.source);
+  //     });
+  //   });
 
-    describe('value', () => {
-      it('can act as a setter', () => {
-        const prop = new ReactiveValueProperty(testOwner);
+  //   describe('value', () => {
+  //     it('can act as a setter', () => {
+  //       const prop = new ReactiveProperty(testOwner);
 
-        prop.value = testValue;
+  //       prop.value = testValue;
 
-        should.exist(prop.value);
-        prop.value.should.equal(testValue);
-      });
-    });
-  });
+  //       should.exist(prop.value);
+  //       prop.value.should.equal(testValue);
+  //     });
+  //   });
+  // });
 });

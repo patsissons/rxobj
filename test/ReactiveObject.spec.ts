@@ -1,6 +1,6 @@
 import { should } from './setup';
 
-import { Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ReactiveObject } from '../src/ReactiveObject';
 
 describe('ReactiveObject', () => {
@@ -13,61 +13,6 @@ describe('ReactiveObject', () => {
 
     should.exist(obj.isReactive);
     obj.isReactive.should.be.true;
-  });
-
-  describe('propertyFrom', () => {
-    class TestObject extends BasicReactiveObject {
-      public subject = new Subject<number>();
-      public streamProp = this.propertyFrom(this.subject);
-    }
-
-    it('registers a member', () => {
-      const obj = new TestObject();
-
-      should.exist(obj.streamProp);
-      obj.getMembers().length.should.eql(1);
-      obj.getMembers()[0].should.eql(obj.streamProp);
-    });
-
-    it('can generate notifications from changing stream properties', (done) => {
-      const obj = new TestObject();
-
-      obj.changing.subscribe(x => {
-        should.exist(x);
-        should.exist(x.source);
-        should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
-
-        x.source.should.equal(obj);
-        x.value.member.should.eql(obj.streamProp);
-        x.value.memberName.should.eql('streamProp');
-
-        done();
-      });
-
-      obj.subject.next(1);
-    });
-
-    it('can generate notifications from changed stream properties', (done) => {
-      const obj = new TestObject();
-
-      obj.changed.subscribe(x => {
-        should.exist(x);
-        should.exist(x.source);
-        should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
-
-        x.source.should.equal(obj);
-        x.value.member.should.eql(obj.streamProp);
-        x.value.memberName.should.eql('streamProp');
-
-        done();
-      });
-
-      obj.subject.next(1);
-    });
   });
 
   describe('property', () => {
@@ -126,7 +71,7 @@ describe('ReactiveObject', () => {
 
   describe('command', () => {
     class TestObject extends BasicReactiveObject {
-      public cmd = this.command(x => true);
+      public cmd = this.command((x: any) => Observable.of(true));
     }
 
     it('registers a member', () => {
@@ -154,7 +99,7 @@ describe('ReactiveObject', () => {
         done();
       });
 
-      obj.cmd.execute();
+      obj.cmd.executeNow();
     });
 
     it('can generate notifications from changed command properties', (done) => {
@@ -174,7 +119,7 @@ describe('ReactiveObject', () => {
         done();
       });
 
-      obj.cmd.execute();
+      obj.cmd.executeNow();
     });
   });
 
