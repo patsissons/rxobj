@@ -10,3 +10,4 @@ export { ReactiveObject, ReactiveMember, ReactiveMemberEventValue } from './Reac
 import './Extensions/add/PausableBuffer';
 import './Extensions/add/ToProperty';
 import './Extensions/add/ReactiveList';
+import './Extensions/add/InvokeCommand';
