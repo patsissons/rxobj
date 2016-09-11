@@ -14,6 +14,12 @@
   ],
   "files": [
     "./typings/index.d.ts",
+    "./src/Extensions/add/PausableBuffer.ts",
+    "./src/Extensions/add/ToList.ts",
+    "./src/Extensions/add/ToProperty.ts",
+    "./src/Extensions/operators/PausableBuffer.ts",
+    "./src/Extensions/operators/ToList.ts",
+    "./src/Extensions/operators/ToProperty.ts",
     "./src/ReactiveApp.ts",
     "./src/ReactiveCommand.ts",
     "./src/ReactiveEvent.ts",
