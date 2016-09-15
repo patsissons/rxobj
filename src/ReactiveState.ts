@@ -1,20 +1,49 @@
 import { Subscription, Observable, Subject } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
-import { ReactiveApp } from './ReactiveApp';
 import { SubjectScheduler } from './SubjectScheduler';
+import { ReactiveApp } from './ReactiveApp';
+import { ReactiveEvent } from './ReactiveEvent';
 
-function dedup<T>(batch: T[]) {
+export type AnyReactiveState = ReactiveState<any>;
+export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
+
+function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
+  if (batch.length <= 1) {
+    return batch;
+  }
+
   const result: T[] = [];
-  let last: T = undefined;
 
-  batch
-    .forEach((x, i) => {
-      if (i === 0 || x !== last) {
-        result.push(x);
-      }
+  // we dedup ReactiveObject events different than other events
+  if ((<AnyReactiveState>batch[0].value).isReactive) {
+    const seen = <{ [ key: string ]: any }>{};
 
-      last = x;
-    });
+    // dedup based on the member name
+    batch
+      .forEach(x => {
+        if (seen[x.source.name] == null) {
+          seen[x.source.name] = x;
+          result.push(x);
+        }
+      });
+  }
+  else {
+    // result = batch;
+    let last: T;
+
+    // dedup based on the member value
+    batch
+      .forEach((x, i) => {
+        if (i === 0) {
+          result.push(x);
+        }
+        else if (x !== last) {
+          result.push(x);
+        }
+
+        last = x;
+      });
+  }
 
   return result;
 }
@@ -24,8 +53,8 @@ export class ReactiveState<TValue> extends Subscription {
     super();
 
     this.startDelayNotificationsSubject = new Subject<any>();
-    this.changingSubject = new SubjectScheduler<TValue>(scheduler);
-    this.changedSubject = new SubjectScheduler<TValue>(scheduler);
+    this.changingSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
+    this.changedSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
     this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler);
 
     this.add(this.startDelayNotificationsSubject);
@@ -54,18 +83,20 @@ export class ReactiveState<TValue> extends Subscription {
       .refCount();
   }
 
+  private objectName: string;
+
   private changeNotificationsSuppressed = 0;
   private changeNotificationsDelayed = 0;
   private startDelayNotificationsSubject: Subject<any>;
 
-  protected changingSubject: SubjectScheduler<TValue>;
-  protected changedSubject: SubjectScheduler<TValue>;
+  protected changingSubject: SubjectScheduler<ReactiveEvent<this, TValue>>;
+  protected changedSubject: SubjectScheduler<ReactiveEvent<this, TValue>>;
 
   protected thrownErrorsHandler: SubjectScheduler<Error>;
-  protected changingObservable: Observable<TValue>;
-  protected changedObservable: Observable<TValue>;
+  protected changingObservable: Observable<ReactiveEvent<this, TValue>>;
+  protected changedObservable: Observable<ReactiveEvent<this, TValue>>;
 
-  protected notifyPropertyChanging(changing: () => TValue) {
+  protected notifyPropertyChanging(changing: () => ReactiveEvent<this, TValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -73,7 +104,7 @@ export class ReactiveState<TValue> extends Subscription {
     this.notifyObservable(changing, this.changingSubject);
   }
 
-  protected notifyPropertyChanged(changed: () => TValue) {
+  protected notifyPropertyChanged(changed: () => ReactiveEvent<this, TValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -81,7 +112,7 @@ export class ReactiveState<TValue> extends Subscription {
     this.notifyObservable(changed, this.changedSubject);
   }
 
-  protected notifyObservable(change: () => TValue, subject: SubjectScheduler<TValue>) {
+  protected notifyObservable(change: () => ReactiveEvent<this, TValue>, subject: SubjectScheduler<ReactiveEvent<this, TValue>>) {
     try {
       subject.next(change.apply(this));
     } catch (err) {
@@ -91,6 +122,19 @@ export class ReactiveState<TValue> extends Subscription {
 
   public get isReactive() {
     return true;
+  }
+
+  public get name() {
+    return this.objectName;
+  }
+
+  public set name(value: string) {
+    if (this.objectName == null) {
+      this.objectName = value;
+    }
+    else {
+      throw new Error(`ReactiveState Member Name already set: ${ this.objectName }`);
+    }
   }
 
   public get changing() {

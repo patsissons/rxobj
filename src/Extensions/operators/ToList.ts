@@ -1,5 +1,5 @@
 import { Scheduler } from 'rxjs/Scheduler';
-import { ReactiveObject, ReactiveMemberContainer } from '../../ReactiveObject';
+import { ReactiveObject, registerMember } from '../../ReactiveObject';
 import { ReactiveList } from '../../ReactiveList';
 
 export function toList<TObj extends ReactiveObject, TValue>(owner: TObj, scheduler?: Scheduler, errorScheduler?: Scheduler) {
@@ -7,7 +7,7 @@ export function toList<TObj extends ReactiveObject, TValue>(owner: TObj, schedul
 
   const list = new ReactiveList(owner, thisArg, scheduler, errorScheduler);
 
-  (<ReactiveMemberContainer><any>owner).registerMember(list);
+  registerMember(owner, list);
 
   return list;
 }

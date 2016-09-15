@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
-import { ReactiveObject, ReactiveMemberContainer } from '../../ReactiveObject';
+import { ReactiveObject, registerMember } from '../../ReactiveObject';
 import { ReactiveProperty } from '../../ReactiveProperty';
 
 export function toProperty<TObj extends ReactiveObject, TValue>(owner: TObj, initialValue?: TValue, scheduler?: Scheduler, errorScheduler?: Scheduler) {
@@ -8,7 +8,7 @@ export function toProperty<TObj extends ReactiveObject, TValue>(owner: TObj, ini
 
   const prop =  new ReactiveProperty(owner, initialValue, thisArg, scheduler, errorScheduler);
 
-  (<ReactiveMemberContainer><any>owner).registerMember(prop);
+  registerMember(owner, prop);
 
   return prop;
 }

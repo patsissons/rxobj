@@ -17,7 +17,7 @@ enum ExecutionDemarcation {
   Ended,
 }
 
-class ExecutionInfo<TParam, TResult> {
+class ExecutionState<TParam, TResult> {
   constructor(private demarcationValue: ExecutionDemarcation, private paramValue?: TParam, private resultValue?: TResult) {
   }
 
@@ -34,13 +34,13 @@ class ExecutionInfo<TParam, TResult> {
   }
 }
 
-export class ReactiveCommand<TObj, TParam, TResult> extends ReactiveState<ReactiveEvent<ReactiveCommand<TObj, TParam, TResult>, ReactiveCommandEventValue<TParam, TResult>>> {
-  constructor(public owner: TObj, protected executeAction: (param: TParam) => Observable<TResult>, canExecute: Observable<boolean> = Observable.of(true), scheduler?: Scheduler, errorScheduler?: Scheduler) {
+export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<ReactiveCommandEventValue<TParam, TResult>> {
+  constructor(public owner: TObject, protected executeAction: (param: TParam) => Observable<TResult>, canExecute: Observable<boolean> = Observable.of(true), scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(scheduler, errorScheduler);
 
-    this.executionInfoSubject = new SubjectScheduler<ExecutionInfo<TParam, TResult>>(scheduler);
+    this.executionStateSubject = new SubjectScheduler<ExecutionState<TParam, TResult>>(scheduler);
 
-    this.isExecutingObservable = this.executionInfoSubject
+    this.isExecutingObservable = this.executionStateSubject
       .asObservable()
       .map(x => x.demarcation === ExecutionDemarcation.Begin)
       .startWith(false)
@@ -59,11 +59,11 @@ export class ReactiveCommand<TObj, TParam, TResult> extends ReactiveState<Reacti
       .publishReplay(1)
       .refCount();
 
-    this.add(this.executionInfoSubject);
+    this.add(this.executionStateSubject);
     this.add(this.canExecuteObservable.subscribe());
 
     this.add(
-      this.executionInfoSubject
+      this.executionStateSubject
         .asObservable()
         .filter(x => x.demarcation === ExecutionDemarcation.Begin)
         .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
@@ -75,7 +75,7 @@ export class ReactiveCommand<TObj, TParam, TResult> extends ReactiveState<Reacti
     );
 
     this.add(
-      this.executionInfoSubject
+      this.executionStateSubject
         .asObservable()
         .filter(x => x.demarcation === ExecutionDemarcation.EndWithResult)
         .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
@@ -88,7 +88,7 @@ export class ReactiveCommand<TObj, TParam, TResult> extends ReactiveState<Reacti
     );
   }
 
-  private executionInfoSubject: SubjectScheduler<ExecutionInfo<TParam, TResult>>;
+  private executionStateSubject: SubjectScheduler<ExecutionState<TParam, TResult>>;
   private isExecutingObservable: Observable<boolean>;
   private canExecuteObservable: Observable<boolean>;
 
@@ -107,34 +107,28 @@ export class ReactiveCommand<TObj, TParam, TResult> extends ReactiveState<Reacti
   }
 
   public execute(param?: TParam) {
-    try {
-      return Observable
-        .defer<TResult>(() => {
-          this.executionInfoSubject.next(new ExecutionInfo<TParam, TResult>(ExecutionDemarcation.Begin, param));
-          return Observable.empty<TResult>();
-        })
-        .concat<TResult>(Observable.defer(() => this.executeAction(param)))
-        .do(
-          x => {
-            this.executionInfoSubject.next(new ExecutionInfo<TParam, TResult>(ExecutionDemarcation.EndWithResult, param, x));
-          },
-          undefined,
-          () => {
-            this.executionInfoSubject.next(new ExecutionInfo<TParam, TResult>(ExecutionDemarcation.Ended, param));
-          }
-        )
-        .catch(err => {
-          this.executionInfoSubject.next(new ExecutionInfo<TParam, TResult>(ExecutionDemarcation.EndWithError, param));
-          this.thrownErrorsHandler.next(err);
-          return Observable.throw<TResult>(err);
-        })
-        .publishLast()
-        .refCount();
-    }
-    catch (err) {
-      this.thrownErrorsHandler.next(err);
-      return <Observable<TResult>>Observable.throw<TResult>(err);
-    }
+    return Observable
+      .defer<TResult>(() => {
+        this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.Begin, param));
+        return Observable.empty<TResult>();
+      })
+      .concat<TResult>(Observable.defer(() => this.executeAction(param)))
+      .do(
+        x => {
+          this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.EndWithResult, param, x));
+        },
+        undefined,
+        () => {
+          this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.Ended, param));
+        }
+      )
+      .catch(err => {
+        this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.EndWithError, param));
+        this.thrownErrorsHandler.next(err);
+        return Observable.throw<TResult>(err);
+      })
+      .publishLast()
+      .refCount();
   }
 
   public executeNow(param?: TParam, observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void), error?: (error: any) => void, complete?: () => void) {
