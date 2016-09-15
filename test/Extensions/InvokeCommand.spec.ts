@@ -22,6 +22,34 @@ describe('InvokeCommand', () => {
     results.value.should.be.true;
   });
 
+  it('catches errors from execution', () => {
+    const error = new Error('testing');
+
+    class ErrorObject extends ReactiveObject {
+      public cmd = this.command((x: boolean) => {
+        if (x === true) {
+          throw error;
+        }
+
+        return Observable.of(true);
+      });
+    }
+
+    const obj = new ErrorObject();
+    const source = Observable.of(true);
+    const results = new BehaviorSubject<boolean>(undefined);
+    const errors = new BehaviorSubject<Error>(undefined);
+
+    obj.cmd.results.subscribe(results);
+    obj.cmd.thrownErrors.subscribe(errors);
+
+    source.invokeCommand(obj, obj.cmd);
+
+    should.not.exist(results.value);
+    should.exist(errors.value);
+    errors.value.should.eql(error);
+  });
+
   it('can invoke a dynamic command', () => {
     const obj = new TestObject();
     const source = Observable.of(true);

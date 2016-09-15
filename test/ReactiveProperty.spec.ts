@@ -21,6 +21,18 @@ describe('ReactiveProperty', () => {
       should.exist(prop.value);
       prop.value.should.equal(testValue);
     });
+
+    it('can use an observable stream', () => {
+      const prop = new ReactiveProperty(testOwner, undefined, Observable.of(testValue));
+
+      prop.value.should.eql(testValue);
+    });
+
+    it('can use an observable stream with an initial value', () => {
+      const prop = new ReactiveProperty(testOwner, '', Observable.of(testValue));
+
+      prop.value.should.eql(testValue);
+    });
   });
 
   describe('value', () => {
@@ -29,6 +41,26 @@ describe('ReactiveProperty', () => {
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
+    });
+
+    it('supports value changes using the setter', () => {
+      const prop = new ReactiveProperty(testOwner, '');
+
+      prop.value = testValue;
+
+      prop.value.should.equal(testValue);
+    });
+
+    it('throws an error on set if constructed with an observable stream', () => {
+      const prop = new ReactiveProperty(testOwner, undefined, Observable.of(''));
+      const errors = new BehaviorSubject<Error>(undefined);
+
+      prop.thrownErrors.subscribe(errors);
+
+      prop.value = testValue;
+
+      prop.value.should.not.eql(testValue);
+      should.exist(errors.value);
     });
   });
 
@@ -51,14 +83,12 @@ describe('ReactiveProperty', () => {
     });
 
     it('can generate notifications before a value change', (done) => {
-      const prop = new ReactiveProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner);
 
-      prop.changing.subscribe(x => {
-        x.source.value.should.eql('');
-        x.value.should.eql(testValue);
-
-        done();
-      });
+      prop.changing.take(1).mochaSubscribe(x => {
+        should.not.exist(x.source.value);
+        x.value.should.eqls(testValue);
+      }, done);
 
       prop.value = testValue;
     });
@@ -231,38 +261,37 @@ describe('ReactiveProperty', () => {
   });
 
   describe('delayChangeNotifications', () => {
-    it('delays change notifications until disabled', (done) => {
+    it('delays change notifications until disabled', () => {
       const prop = new ReactiveProperty(testOwner, 0);
-      const subject = new BehaviorSubject<number>(0);
+      const values = new BehaviorSubject<number>(0);
 
       prop.changed
         .map(x => x.value)
-        .subscribe(subject);
+        .subscribe(values);
 
-      subject.value.should.eql(0);
+      values.value.should.eql(0);
 
       prop.value = 1;
-      subject.value.should.eql(1);
+      values.value.should.eql(1);
 
-      subject
-        .subscribe(x => {
-          if (x === 3) {
-            done();
-          }
-        });
+      // values
+      //   .take(1)
+      //   .mochaSubscribe(undefined, done);
 
       Observable.using(
         () => prop.delayChangeNotifications(),
         x => {
           prop.value = 2;
-          subject.value.should.eql(1);
+          values.value.should.eql(1);
 
           prop.value = 3;
-          subject.value.should.eql(1);
+          values.value.should.eql(1);
 
           x.unsubscribe();
         }
       ).subscribe();
+
+      values.value.should.eql(3);
     });
 
     it('handles multiple calls', (done) => {
@@ -308,39 +337,4 @@ describe('ReactiveProperty', () => {
       ).subscribe();
     });
   });
-
-  // describe('ReactiveStreamProperty', () => {
-  //   describe('constructor', () => {
-  //     it('initializes with an observable source', () => {
-  //       const source = Observable.of(testValue);
-  //       const prop = new ReactiveProperty(testOwner, undefined, source);
-
-  //       should.exist(prop.source);
-  //       prop.source.should.equal(source);
-  //       should.exist(prop.value);
-  //       prop.value.should.eql(testValue);
-  //     });
-  //   });
-  // });
-
-  // describe('ReactiveValueProperty', () => {
-  //   describe('constructor', () => {
-  //     it('initializes with a value handler source', () => {
-  //       const prop = new ReactiveProperty(testOwner);
-
-  //       should.exist(prop.source);
-  //     });
-  //   });
-
-  //   describe('value', () => {
-  //     it('can act as a setter', () => {
-  //       const prop = new ReactiveProperty(testOwner);
-
-  //       prop.value = testValue;
-
-  //       should.exist(prop.value);
-  //       prop.value.should.equal(testValue);
-  //     });
-  //   });
-  // });
 });

@@ -35,12 +35,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.valueProp);
-        x.value.memberName.should.eql('valueProp');
+        x.value.should.eql(obj.valueProp);
+        x.value.name.should.eql('valueProp');
 
         done();
       });
@@ -55,12 +53,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.valueProp);
-        x.value.memberName.should.eql('valueProp');
+        x.value.should.eql(obj.valueProp);
+        x.value.name.should.eql('valueProp');
 
         done();
       });
@@ -89,12 +85,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.cmd);
-        x.value.memberName.should.eql('cmd');
+        x.value.should.eql(obj.cmd);
+        x.value.name.should.eql('cmd');
 
         done();
       });
@@ -109,12 +103,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.cmd);
-        x.value.memberName.should.eql('cmd');
+        x.value.should.eql(obj.cmd);
+        x.value.name.should.eql('cmd');
 
         done();
       });
@@ -143,12 +135,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.items);
-        x.value.memberName.should.eql('items');
+        x.value.should.eql(obj.items);
+        x.value.name.should.eql('items');
 
         done();
       });
@@ -163,12 +153,10 @@ describe('ReactiveObject', () => {
         should.exist(x);
         should.exist(x.source);
         should.exist(x.value);
-        should.exist(x.value.member);
-        should.exist(x.value.memberName);
 
         x.source.should.equal(obj);
-        x.value.member.should.eql(obj.items);
-        x.value.memberName.should.eql('items');
+        x.value.should.eql(obj.items);
+        x.value.name.should.eql('items');
 
         done();
       });
