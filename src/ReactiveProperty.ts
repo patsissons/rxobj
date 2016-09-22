@@ -3,7 +3,12 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
-export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TValue> {
+export interface ReactivePropertyEventValue<TValue> {
+  oldValue: TValue;
+  newValue: TValue;
+}
+
+export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TValue, ReactivePropertyEventValue<TValue>> {
   constructor(owner: TObject, initialValue?: TValue, protected source: Observable<TValue> = new Subject<TValue>(), scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(owner, scheduler, errorScheduler);
 
@@ -15,22 +20,35 @@ export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TV
       this.canWrite = false;
     }
 
-    this.add(source
-      .startWith(initialValue || undefined)
-      .distinctUntilChanged()
-      .subscribe(x => {
-        this.notifyPropertyChanging(() => new ReactiveEvent(this, x));
+    if (initialValue != null) {
+      source = source.startWith(initialValue);
+    }
 
-        // lastValue is set before propertyChanged occurs
-        this.notifyPropertyChanged(() => new ReactiveEvent(this, x));
+    this.add(source
+      .distinctUntilChanged()
+      .subscribe(newValue => {
+        const oldValue = this.value;
+        this.notifyPropertyChanging(() => new ReactiveEvent(this, <ReactivePropertyEventValue<TValue>>{
+          oldValue,
+          newValue,
+        }));
+
+        this.notifyPropertyChanged(() => new ReactiveEvent(this, <ReactivePropertyEventValue<TValue>>{
+          oldValue,
+          newValue,
+        }));
       }, this.thrownErrorsHandler.next)
     );
   }
 
   protected canWrite: boolean;
 
+  protected getCurrentValue() {
+    return this.lastEvent == null ? null : this.lastEvent.newValue;
+  }
+
   public get value() {
-    return this.lastValue;
+    return this.getCurrentValue();
   }
 
   public set value(value: TValue) {

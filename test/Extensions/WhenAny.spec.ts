@@ -3,7 +3,7 @@ import { should } from '../setup';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveObject } from '../../src/ReactiveObject';
 import { ReactiveEvent } from '../../src/ReactiveEvent';
-import { ReactiveProperty } from '../../src/ReactiveProperty';
+import { ReactiveProperty, ReactivePropertyEventValue } from '../../src/ReactiveProperty';
 import '../../src/Extensions/add/WhenAny';
 
 describe('whenAny', () => {
@@ -36,7 +36,7 @@ describe('whenAny', () => {
     it('creates events when watching a single observable', () => {
       const obj = new TestObject();
       type eventType = {
-        testProp1: ReactiveEvent<ReactiveProperty<TestObject, string>, string>;
+        testProp1: ReactiveEvent<ReactiveProperty<TestObject, string>, ReactivePropertyEventValue<string>>;
       };
       const events = new BehaviorSubject<eventType>(null);
       let count = 0;
@@ -51,7 +51,8 @@ describe('whenAny', () => {
       obj.testProp1.value = 'test';
       should.exist(events.value);
       should.exist(events.value.testProp1);
-      events.value.testProp1.value.should.eql(obj.testProp1.value);
+      should.not.exist(events.value.testProp1.value.oldValue);
+      events.value.testProp1.value.newValue.should.eql(obj.testProp1.value);
       events.value.testProp1.source.should.eql(obj.testProp1);
       events.value.testProp1.source.owner.should.eql(obj);
       count.should.eql(1);
@@ -60,8 +61,8 @@ describe('whenAny', () => {
     it('creates events when watching two or more observables', () => {
       const obj = new TestObject();
       type eventType = {
-        testProp1: ReactiveEvent<ReactiveProperty<TestObject, string>, string>;
-        testProp2: ReactiveEvent<ReactiveProperty<TestObject, string>, string>;
+        testProp1: ReactiveEvent<ReactiveProperty<TestObject, string>, ReactivePropertyEventValue<string>>;
+        testProp2: ReactiveEvent<ReactiveProperty<TestObject, string>, ReactivePropertyEventValue<string>>;
       };
       const events = new BehaviorSubject<eventType>(null);
       let count = 0;
@@ -80,10 +81,12 @@ describe('whenAny', () => {
       should.exist(events.value);
       should.exist(events.value.testProp1);
       should.exist(events.value.testProp2);
-      events.value.testProp1.value.should.eql(obj.testProp1.value);
+      should.not.exist(events.value.testProp1.value.oldValue);
+      events.value.testProp1.value.newValue.should.eql(obj.testProp1.value);
       events.value.testProp1.source.should.eql(obj.testProp1);
       events.value.testProp1.source.owner.should.eql(obj);
-      events.value.testProp2.value.should.eql(obj.testProp2.value);
+      should.not.exist(events.value.testProp2.value.oldValue);
+      events.value.testProp2.value.newValue.should.eql(obj.testProp2.value);
       events.value.testProp2.source.should.eql(obj.testProp2);
       events.value.testProp2.source.owner.should.eql(obj);
       count.should.eql(1);

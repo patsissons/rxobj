@@ -11,7 +11,7 @@ export function registerMember(owner: ReactiveObject, member: AnyReactiveState) 
   (<any>owner).registerMember(member);
 }
 
-export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyReactiveState> {
+export abstract class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject, AnyReactiveState> {
   constructor(owner?: ReactiveObject, scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(owner, scheduler, errorScheduler);
 
@@ -75,7 +75,7 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyRe
     return this.registerMember(new ReactiveList(this, items, scheduler, errorScheduler));
   }
 
-  public get value() {
+  protected getCurrentValue() {
     return this;
   }
 

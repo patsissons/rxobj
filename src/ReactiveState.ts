@@ -4,7 +4,7 @@ import { SubjectScheduler } from './SubjectScheduler';
 import { ReactiveApp } from './ReactiveApp';
 import { ReactiveEvent } from './ReactiveEvent';
 
-export type AnyReactiveState = ReactiveState<any, any>;
+export type AnyReactiveState = ReactiveState<any, any, any>;
 export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
 
 function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
@@ -48,13 +48,13 @@ function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
   return result;
 }
 
-export class ReactiveState<TObject, TValue> extends Subscription {
+export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscription {
   constructor(public owner?: TObject, scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super();
 
     this.startDelayNotificationsSubject = new Subject<any>();
-    this.changingSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
-    this.changedSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
+    this.changingSubject = new SubjectScheduler<ReactiveEvent<this, TEventValue>>(scheduler);
+    this.changedSubject = new SubjectScheduler<ReactiveEvent<this, TEventValue>>(scheduler);
     this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler.next);
 
     this.add(this.startDelayNotificationsSubject);
@@ -84,20 +84,20 @@ export class ReactiveState<TObject, TValue> extends Subscription {
   }
 
   private objectName: string;
-  protected lastValue: TValue;
+  protected lastEvent: TEventValue;
 
   private changeNotificationsSuppressed = 0;
   private changeNotificationsDelayed = 0;
   private startDelayNotificationsSubject: Subject<any>;
 
-  protected changingSubject: SubjectScheduler<ReactiveEvent<this, TValue>>;
-  protected changedSubject: SubjectScheduler<ReactiveEvent<this, TValue>>;
+  protected changingSubject: SubjectScheduler<ReactiveEvent<this, TEventValue>>;
+  protected changedSubject: SubjectScheduler<ReactiveEvent<this, TEventValue>>;
 
   protected thrownErrorsHandler: SubjectScheduler<Error>;
-  protected changingObservable: Observable<ReactiveEvent<this, TValue>>;
-  protected changedObservable: Observable<ReactiveEvent<this, TValue>>;
+  protected changingObservable: Observable<ReactiveEvent<this, TEventValue>>;
+  protected changedObservable: Observable<ReactiveEvent<this, TEventValue>>;
 
-  protected notifyPropertyChanging(changing: () => ReactiveEvent<this, TValue>) {
+  protected notifyPropertyChanging(changing: () => ReactiveEvent<this, TEventValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -105,17 +105,17 @@ export class ReactiveState<TObject, TValue> extends Subscription {
     return this.notifyObservable(changing, this.changingSubject);
   }
 
-  protected notifyPropertyChanged(changed: () => ReactiveEvent<this, TValue>) {
+  protected notifyPropertyChanged(changed: () => ReactiveEvent<this, TEventValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
 
-    return this.notifyObservable(changed, this.changedSubject, x => { this.lastValue = x; });
+    return this.notifyObservable(changed, this.changedSubject, x => { this.lastEvent = x; });
   }
 
-  protected notifyObservable(change: () => ReactiveEvent<this, TValue>, subject: SubjectScheduler<ReactiveEvent<this, TValue>>, before?: (value: TValue) => void) {
+  protected notifyObservable(change: () => ReactiveEvent<this, TEventValue>, subject: SubjectScheduler<ReactiveEvent<this, TEventValue>>, before?: (value: TEventValue) => void) {
     try {
-      const event = <ReactiveEvent<this, TValue>>change.apply(this);
+      const event = <ReactiveEvent<this, TEventValue>>change.apply(this);
 
       if (before != null) {
         before(event.value);
@@ -128,6 +128,8 @@ export class ReactiveState<TObject, TValue> extends Subscription {
       this.thrownErrorsHandler.next(err);
     }
   }
+
+  protected abstract getCurrentValue(): TValue;
 
   public get isReactive() {
     return true;
@@ -146,8 +148,8 @@ export class ReactiveState<TObject, TValue> extends Subscription {
     }
   }
 
-  public get value(): any {
-    return this.lastValue;
+  public get value(): TValue {
+    return this.getCurrentValue();
   }
 
   public get changing() {

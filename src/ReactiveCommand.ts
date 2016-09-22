@@ -34,7 +34,7 @@ class ExecutionState<TParam, TResult> {
   }
 }
 
-export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TObject, ReactiveCommandEventValue<TParam, TResult>> {
+export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TObject, TResult, ReactiveCommandEventValue<TParam, TResult>> {
   constructor(owner: TObject, protected executeAction: (param: TParam) => Observable<TResult>, canExecute: Observable<boolean> = Observable.of(true), scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(owner, scheduler, errorScheduler);
 
@@ -92,8 +92,8 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
   private isExecutingObservable: Observable<boolean>;
   private canExecuteObservable: Observable<boolean>;
 
-  public get value() {
-    return this.lastValue == null ? null : this.lastValue.result;
+  protected getCurrentValue() {
+    return this.lastEvent == null ? null : this.lastEvent.result;
   }
 
   public get canExecute() {

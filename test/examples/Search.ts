@@ -16,9 +16,8 @@ export class SearchViewModel extends rxo.ReactiveObject {
     this.queryText = this.property('');
     this.searchResults = this.list<string>();
 
-    const canSearch = this.queryText.changed
-      .map(x => x.value)
-      .map(x => x != null && x.trim().length > 0)
+    const canSearch = this
+      .whenAnyValue(this, (x: this) => x.queryText, x => x != null && x.trim().length > 0)
       .distinctUntilChanged()
       .startWith((this.queryText.value || '').length > 0);
 
