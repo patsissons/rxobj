@@ -92,6 +92,10 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
   private isExecutingObservable: Observable<boolean>;
   private canExecuteObservable: Observable<boolean>;
 
+  public get value() {
+    return this.lastValue == null ? null : this.lastValue.result;
+  }
+
   public get canExecute() {
     return this.canExecuteObservable;
   }

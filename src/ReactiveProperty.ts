@@ -21,18 +21,16 @@ export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TV
       .subscribe(x => {
         this.notifyPropertyChanging(() => new ReactiveEvent(this, x));
 
-        this.currentValue = x;
-
-        this.notifyPropertyChanged(() => new ReactiveEvent(this, this.currentValue));
+        // lastValue is set before propertyChanged occurs
+        this.notifyPropertyChanged(() => new ReactiveEvent(this, x));
       }, this.thrownErrorsHandler.next)
     );
   }
 
-  protected currentValue: TValue;
   protected canWrite: boolean;
 
   public get value() {
-    return this.currentValue;
+    return this.lastValue;
   }
 
   public set value(value: TValue) {

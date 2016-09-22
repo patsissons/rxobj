@@ -70,6 +70,10 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyRe
     return this.registerMember(new ReactiveList(this, items, scheduler, errorScheduler));
   }
 
+  public get value() {
+    return this;
+  }
+
   public get members() {
     return this.objectMembers.slice();
   }

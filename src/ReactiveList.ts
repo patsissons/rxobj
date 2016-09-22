@@ -35,6 +35,10 @@ export class ReactiveList<TObject, TValue> extends ReactiveState<TObject, Reacti
     this.notifyPropertyChanged(() => new ReactiveEvent(this, eventArgs));
   }
 
+  public get value() {
+    return this.items;
+  }
+
   public get(index: number) {
     return this.items[index];
   }

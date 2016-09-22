@@ -84,6 +84,7 @@ export class ReactiveState<TObject, TValue> extends Subscription {
   }
 
   private objectName: string;
+  protected lastValue: TValue;
 
   private changeNotificationsSuppressed = 0;
   private changeNotificationsDelayed = 0;
@@ -101,7 +102,7 @@ export class ReactiveState<TObject, TValue> extends Subscription {
       return;
     }
 
-    this.notifyObservable(changing, this.changingSubject);
+    return this.notifyObservable(changing, this.changingSubject);
   }
 
   protected notifyPropertyChanged(changed: () => ReactiveEvent<this, TValue>) {
@@ -109,12 +110,20 @@ export class ReactiveState<TObject, TValue> extends Subscription {
       return;
     }
 
-    this.notifyObservable(changed, this.changedSubject);
+    return this.notifyObservable(changed, this.changedSubject, x => { this.lastValue = x; });
   }
 
-  protected notifyObservable(change: () => ReactiveEvent<this, TValue>, subject: SubjectScheduler<ReactiveEvent<this, TValue>>) {
+  protected notifyObservable(change: () => ReactiveEvent<this, TValue>, subject: SubjectScheduler<ReactiveEvent<this, TValue>>, before?: (value: TValue) => void) {
     try {
-      subject.next(change.apply(this));
+      const event = <ReactiveEvent<this, TValue>>change.apply(this);
+
+      if (before != null) {
+        before(event.value);
+      }
+
+      subject.next(event);
+
+      return event.value;
     } catch (err) {
       this.thrownErrorsHandler.next(err);
     }
@@ -135,6 +144,10 @@ export class ReactiveState<TObject, TValue> extends Subscription {
     else {
       throw new Error(`ReactiveState Member Name already set: ${ this.objectName }`);
     }
+  }
+
+  public get value(): any {
+    return this.lastValue;
   }
 
   public get changing() {
