@@ -55,7 +55,7 @@ export class ReactiveState<TObject, TValue> extends Subscription {
     this.startDelayNotificationsSubject = new Subject<any>();
     this.changingSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
     this.changedSubject = new SubjectScheduler<ReactiveEvent<this, TValue>>(scheduler);
-    this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler);
+    this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler.next);
 
     this.add(this.startDelayNotificationsSubject);
     this.add(this.changingSubject);
