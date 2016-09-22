@@ -39,6 +39,10 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyRe
   }
 
   protected registerMember<T extends AnyReactiveState>(member: T) {
+    if (member.owner == null) {
+      member.owner = this;
+    }
+
     this.add(
       member.changing
         .subscribe(x => {
