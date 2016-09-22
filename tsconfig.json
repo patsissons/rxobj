@@ -37,6 +37,7 @@
     "./test/Extensions/PausableBuffer.spec.ts",
     "./test/Extensions/ToList.spec.ts",
     "./test/Extensions/ToProperty.spec.ts",
+    "./test/Extensions/WhenAny.spec.ts",
     "./test/ReactiveApp.spec.ts",
     "./test/ReactiveCommand.spec.ts",
     "./test/ReactiveEvent.spec.ts",
