@@ -9,5 +9,5 @@ export { ReactiveObject } from './ReactiveObject';
 // augmentations
 import './Extensions/add/PausableBuffer';
 import './Extensions/add/ToProperty';
-import './Extensions/add/ReactiveList';
+import './Extensions/add/ToList';
 import './Extensions/add/InvokeCommand';
