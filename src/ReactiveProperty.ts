@@ -3,9 +3,9 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
-export class ReactiveProperty<TObject, TValue> extends ReactiveState<TValue> {
-  constructor(public owner: TObject, initialValue?: TValue, protected source: Observable<TValue> = new Subject<TValue>(), scheduler?: Scheduler, errorScheduler?: Scheduler) {
-    super(scheduler, errorScheduler);
+export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TValue> {
+  constructor(owner: TObject, initialValue?: TValue, protected source: Observable<TValue> = new Subject<TValue>(), scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(owner, scheduler, errorScheduler);
 
     if (source instanceof Subject) {
       this.add(<Subject<TValue>>source);

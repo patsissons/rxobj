@@ -11,9 +11,9 @@ export function registerMember(owner: ReactiveObject, member: AnyReactiveState) 
   (<any>owner).registerMember(member);
 }
 
-export abstract class ReactiveObject extends ReactiveState<AnyReactiveState> {
-  constructor(scheduler?: Scheduler, errorScheduler?: Scheduler) {
-    super(scheduler, errorScheduler);
+export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyReactiveState> {
+  constructor(owner?: ReactiveObject, scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(owner, scheduler, errorScheduler);
 
     this.objectMembers = [];
   }

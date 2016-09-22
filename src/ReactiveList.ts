@@ -18,9 +18,9 @@ export interface ReactiveListEventValue<TValue> {
   oldStartingIndex?: number;
 }
 
-export class ReactiveList<TObject, TValue> extends ReactiveState<ReactiveListEventValue<TValue>> {
-  constructor(public owner: TObject, items: TValue[] = [], scheduler?: Scheduler, errorScheduler?: Scheduler) {
-    super(scheduler, errorScheduler);
+export class ReactiveList<TObject, TValue> extends ReactiveState<TObject, ReactiveListEventValue<TValue>> {
+  constructor(owner: TObject, items: TValue[] = [], scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(owner, scheduler, errorScheduler);
 
     this.items = items;
   }

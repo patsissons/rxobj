@@ -4,7 +4,7 @@ import { SubjectScheduler } from './SubjectScheduler';
 import { ReactiveApp } from './ReactiveApp';
 import { ReactiveEvent } from './ReactiveEvent';
 
-export type AnyReactiveState = ReactiveState<any>;
+export type AnyReactiveState = ReactiveState<any, any>;
 export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
 
 function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
@@ -48,8 +48,8 @@ function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
   return result;
 }
 
-export class ReactiveState<TValue> extends Subscription {
-  constructor(scheduler?: Scheduler, errorScheduler?: Scheduler) {
+export class ReactiveState<TObject, TValue> extends Subscription {
+  constructor(public owner?: TObject, scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super();
 
     this.startDelayNotificationsSubject = new Subject<any>();
