@@ -11,3 +11,4 @@ import './Extensions/add/PausableBuffer';
 import './Extensions/add/ToProperty';
 import './Extensions/add/ToList';
 import './Extensions/add/InvokeCommand';
+export * from './Extensions/add/WhenAny';
