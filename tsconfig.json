@@ -33,6 +33,8 @@
     "./src/ReactiveState.ts",
     "./src/rxobj.ts",
     "./src/SubjectScheduler.ts",
+    "./test/examples/Search.spec.ts",
+    "./test/examples/Search.ts",
     "./test/Extensions/InvokeCommand.spec.ts",
     "./test/Extensions/PausableBuffer.spec.ts",
     "./test/Extensions/ToList.spec.ts",
