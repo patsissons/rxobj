@@ -1,6 +1,6 @@
 import { should } from '../setup';
 
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { ReactiveObject } from '../../src/ReactiveObject';
 import { ReactiveEvent } from '../../src/ReactiveEvent';
 import { ReactiveProperty, ReactivePropertyEventValue } from '../../src/ReactiveProperty';
