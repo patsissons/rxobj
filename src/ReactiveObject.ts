@@ -57,6 +57,7 @@ export abstract class ReactiveObject extends ReactiveState<ReactiveObject, AnyRe
         }, this.thrownErrorsHandler.next)
     );
 
+    this.add(member);
     this.objectMembers.push(member);
 
     return member;
