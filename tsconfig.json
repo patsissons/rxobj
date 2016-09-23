@@ -38,6 +38,8 @@
     "./test/augmentations/ToList.spec.ts",
     "./test/augmentations/ToProperty.spec.ts",
     "./test/augmentations/WhenAny.spec.ts",
+    "./test/examples/FailTest/Augmentation.ts",
+    "./test/examples/FailTest/BaseClass.ts",
     "./test/examples/Search.spec.ts",
     "./test/examples/Search.ts",
     "./test/ReactiveApp.spec.ts",
