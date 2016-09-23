@@ -7,6 +7,7 @@ import { ReactiveProperty } from './ReactiveProperty';
 import { ReactiveCommand } from './ReactiveCommand';
 import { ReactiveList } from './ReactiveList';
 
+// this export is used internally to handle registering members via augmentations
 export function registerMember(owner: ReactiveObject, member: AnyReactiveState) {
   (<any>owner).registerMember(member);
 }
