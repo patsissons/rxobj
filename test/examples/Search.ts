@@ -34,8 +34,8 @@ export class SearchViewModel extends rxo.ReactiveObject {
       .subscribe(this.thrownErrorsHandler.next);
 
     this
-      .whenAnyValue(this, (x: this) => x.queryText, x => x)
+      .whenAnyValue(this, x => x.queryText, x => x)
       // .debounceTime(1000)
-      .invokeCommand(this, (x: this) => x.search);
+      .invokeCommand(this, x => x.search);
   }
 }

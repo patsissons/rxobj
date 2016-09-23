@@ -1,6 +1,6 @@
 import { Observable, Subscription } from 'rxjs';
 import { ReactiveCommand } from '../../ReactiveCommand';
-import { ReactiveObject } from '../../ReactiveObject';
+import { ReactiveObject, ReactiveObjectType } from '../../ReactiveObject';
 
 function invokeCommandFromObservable<TObj, TParam, TResult>(source: Observable<{ param: TParam, cmd: ReactiveCommand<TObj, TParam, TResult> }>) {
   return source
@@ -38,6 +38,6 @@ export function invokeCommand<TObj extends ReactiveObject, TParam, TResult>(owne
 }
 
 export interface InvokeCommandSignature<TValue> {
-  <TObj extends ReactiveObject, TResult>(owner: TObj, command: ReactiveCommand<TObj, TValue, TResult>): Subscription;
-  <TObj extends ReactiveObject, TParam, TResult>(owner: TObj, commandSelector: (obj: TObj, param: TParam) => ReactiveCommand<TObj, TParam, TResult>): Subscription;
+  <TObj extends ReactiveObjectType, TResult>(owner: TObj, command: ReactiveCommand<TObj, TValue, TResult>): Subscription;
+  <TObj extends ReactiveObjectType, TParam, TResult>(owner: TObj, commandSelector: (obj: TObj, param: TParam) => ReactiveCommand<TObj, TParam, TResult>): Subscription;
 }

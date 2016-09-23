@@ -11,7 +11,11 @@ export function registerMember(owner: ReactiveObject, member: AnyReactiveState) 
   (<any>owner).registerMember(member);
 }
 
-export abstract class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject, AnyReactiveState> {
+// this export is used internally to solve a typescript generic typing issue
+export interface ReactiveObjectType {
+}
+
+export class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject, AnyReactiveState> implements ReactiveObjectType {
   constructor(owner?: ReactiveObject, scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(owner, scheduler, errorScheduler);
 

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
-import { ReactiveObject, registerMember } from '../../ReactiveObject';
+import { ReactiveObject, ReactiveObjectType, registerMember } from '../../ReactiveObject';
 import { ReactiveProperty } from '../../ReactiveProperty';
 
 export function toProperty<TObj extends ReactiveObject, TValue>(owner: TObj, initialValue?: TValue, scheduler?: Scheduler, errorScheduler?: Scheduler) {
@@ -14,5 +14,5 @@ export function toProperty<TObj extends ReactiveObject, TValue>(owner: TObj, ini
 }
 
 export interface ToPropertySignature<TValue> {
-  <TObj extends ReactiveObject>(owner: TObj, initialValue?: TValue, scheduler?: Scheduler, errorScheduler?: Scheduler): ReactiveProperty<TObj, TValue>;
+  <TObj extends ReactiveObjectType>(owner: TObj, initialValue?: TValue, scheduler?: Scheduler, errorScheduler?: Scheduler): ReactiveProperty<TObj, TValue>;
 }

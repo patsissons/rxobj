@@ -1,5 +1,5 @@
 import { Scheduler } from 'rxjs/Scheduler';
-import { ReactiveObject, registerMember } from '../../ReactiveObject';
+import { ReactiveObject, ReactiveObjectType, registerMember } from '../../ReactiveObject';
 import { ReactiveList } from '../../ReactiveList';
 
 export function toList<TObj extends ReactiveObject, TValue>(owner: TObj, scheduler?: Scheduler, errorScheduler?: Scheduler) {
@@ -13,5 +13,5 @@ export function toList<TObj extends ReactiveObject, TValue>(owner: TObj, schedul
 }
 
 export interface ToListSignature<TValue> {
-  <TObj extends ReactiveObject>(owner: TObj, scheduler?: Scheduler, errorScheduler?: Scheduler): ReactiveList<TObj, TValue>;
+  <TObj extends ReactiveObjectType>(owner: TObj, scheduler?: Scheduler, errorScheduler?: Scheduler): ReactiveList<TObj, TValue>;
 }
