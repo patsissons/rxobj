@@ -148,7 +148,7 @@ gulp.task('clean:typings', () => {
   log('Cleaning', util.colors.magenta(config.paths.typings));
 
   del.sync([
-    config.paths.typings,
+    path.join(config.paths.typings, '**', '*'),
   ], { force: true });
 });
 
