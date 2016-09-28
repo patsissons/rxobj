@@ -9,10 +9,18 @@ describe('ReactiveObject', () => {
   }
 
   describe('isReactive', () => {
-    const obj = new BasicReactiveObject();
+    it('should be true for a reactive object instance', () => {
+      const obj = new BasicReactiveObject();
 
-    should.exist(obj.isReactive);
-    obj.isReactive.should.be.true;
+      should.exist(obj.isReactive);
+      obj.isReactive.should.be.true;
+    });
+
+    it('should not be true for a non-reactive object instance', () => {
+      const obj: any = new Object();
+
+      should.not.exist(obj.isReactive);
+    });
   });
 
   describe('property', () => {
