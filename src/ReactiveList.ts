@@ -2,20 +2,6 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 
-declare global {
-  interface Array<T> {
-    toReactiveList<TObject>(owner: TObject, errorScheduler?: Scheduler): ReactiveList<TObject, T>;
-  }
-}
-
-function toReactiveList<TObject, TValue>(owner: TObject, errorScheduler?: Scheduler) {
-  const thisArg: Array<TValue> = this;
-
-  return new ReactiveList(owner, thisArg, errorScheduler);
-}
-
-Array.prototype.toReactiveList = toReactiveList;
-
 export enum ReactiveListChangeAction {
   Add,
   Remove,
@@ -32,9 +18,9 @@ export interface ReactiveListEventValue<TValue> {
   oldStartingIndex?: number;
 }
 
-export class ReactiveList<TObject, TValue> extends ReactiveState<ReactiveEvent<ReactiveList<TObject, TValue>, ReactiveListEventValue<TValue>>> {
-  constructor(public owner: TObject, items: TValue[] = [], errorScheduler?: Scheduler) {
-    super(errorScheduler);
+export class ReactiveList<TObject, TValue> extends ReactiveState<TObject, Array<TValue>, ReactiveListEventValue<TValue>> {
+  constructor(owner: TObject, items: TValue[] = [], scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(owner, scheduler, errorScheduler);
 
     this.items = items;
   }
@@ -42,17 +28,15 @@ export class ReactiveList<TObject, TValue> extends ReactiveState<ReactiveEvent<R
   private items: TValue[];
 
   private wrapArrayFunction<TResult>(func: Function, args: IArguments, eventArgs: ReactiveListEventValue<TValue>) {
-    const sub = this.changing.subscribe(x => {
-      if (x.value === eventArgs) {
-        func.apply(x.source.items, args);
-
-        x.source.notifyPropertyChanged(() => new ReactiveEvent(x.source, x.value));
-
-        sub.unsubscribe();
-      }
-    });
-
     this.notifyPropertyChanging(() => new ReactiveEvent(this, eventArgs));
+
+    func.apply(this.items, args);
+
+    this.notifyPropertyChanged(() => new ReactiveEvent(this, eventArgs));
+  }
+
+  protected getCurrentValue() {
+    return this.items;
   }
 
   public get(index: number) {

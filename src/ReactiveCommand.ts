@@ -1,59 +1,108 @@
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
+import { PartialObserver } from 'rxjs/Observer';
 import { Scheduler } from 'rxjs/Scheduler';
+import { Subscription } from 'rxjs/Subscription';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 import { SubjectScheduler } from './SubjectScheduler';
 
-export interface ReactiveCommandEventValue<T> {
-  param: any;
-  result: T;
+export interface ReactiveCommandEventValue<TParam, TResult> {
+  param: TParam;
+  result: TResult;
 }
 
-// NOTE: we don't type the parameter because it would mean that you would have
-//       to always provide that type information when declaring a command, which
-//       is undesirable.
+enum ExecutionDemarcation {
+  Begin,
+  EndWithResult,
+  EndWithError,
+  Ended,
+}
 
-export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<ReactiveCommand<TObj, TResult>, ReactiveCommandEventValue<TResult>>> {
-  constructor(public owner: TObj, protected executeAction: (param: any) => TResult, canExecute?: Observable<boolean>, scheduler?: Scheduler, errorScheduler?: Scheduler) {
-    super(errorScheduler);
+class ExecutionState<TParam, TResult> {
+  constructor(private demarcationValue: ExecutionDemarcation, private paramValue?: TParam, private resultValue?: TResult) {
+  }
 
-    this.isExecutingSubject = new BehaviorSubject(false);
-    this.isExecutingScheduledSubject = new SubjectScheduler(scheduler, undefined, this.isExecutingSubject);
+  public get demarcation() {
+    return this.demarcationValue;
+  }
 
-    this.add(this.isExecutingScheduledSubject);
+  public get param() {
+    return this.paramValue;
+  }
 
-    if (canExecute == null) {
-      canExecute = Observable.of(true);
-    }
+  public get result() {
+    return this.resultValue;
+  }
+}
 
-    this.canExecuteObservable = Observable
-      .combineLatest(this.isExecuting, canExecute, (ie, ce) => ie === false && ce);
+export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TObject, TResult, ReactiveCommandEventValue<TParam, TResult>> {
+  constructor(owner: TObject, protected executeAction: (param: TParam) => Observable<TResult>, canExecute: Observable<boolean> = Observable.of(true), scheduler?: Scheduler, errorScheduler?: Scheduler) {
+    super(owner, scheduler, errorScheduler);
+
+    this.executionStateSubject = new SubjectScheduler<ExecutionState<TParam, TResult>>(scheduler);
+
+    this.isExecutingObservable = this.executionStateSubject
+      .asObservable()
+      .map(x => x.demarcation === ExecutionDemarcation.Begin)
+      .startWith(false)
+      .distinctUntilChanged()
+      .publishReplay(1)
+      .refCount();
+
+    this.canExecuteObservable = canExecute
+      .catch(e => {
+        this.thrownErrorsHandler.next(e);
+        return Observable.of(false);
+      })
+      .startWith(false)
+      .combineLatest(this.isExecutingObservable, (canEx, isEx) => canEx === true && isEx === false)
+      .distinctUntilChanged()
+      .publishReplay(1)
+      .refCount();
+
+    this.add(this.executionStateSubject);
+    this.add(this.canExecuteObservable.subscribe());
 
     this.add(
-      this.changing
+      this.executionStateSubject
+        .asObservable()
+        .filter(x => x.demarcation === ExecutionDemarcation.Begin)
+        .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
+          param: x.param,
+        }))
         .subscribe(x => {
-          this.notifyPropertyChanged(() => new ReactiveEvent(this, {
-            param: x.value.param,
-            result: this.executeAction.apply(this, [ x.value.param ]),
-          }));
+          this.notifyPropertyChanging(() => x);
         }, this.thrownErrorsHandler.next)
     );
 
     this.add(
-      this.changed
+      this.executionStateSubject
+        .asObservable()
+        .filter(x => x.demarcation === ExecutionDemarcation.EndWithResult)
+        .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
+          param: x.param,
+          result: x.result,
+        }))
         .subscribe(x => {
-          this.isExecutingScheduledSubject.next(false);
+          this.notifyPropertyChanged(() => x);
         }, this.thrownErrorsHandler.next)
     );
   }
 
-  private isExecutingSubject: BehaviorSubject<boolean>;
-  private isExecutingScheduledSubject: SubjectScheduler<boolean>;
+  private executionStateSubject: SubjectScheduler<ExecutionState<TParam, TResult>>;
+  private isExecutingObservable: Observable<boolean>;
   private canExecuteObservable: Observable<boolean>;
 
+  protected getCurrentValue() {
+    return this.lastEvent == null ? null : this.lastEvent.result;
+  }
+
+  public get canExecute() {
+    return this.canExecuteObservable;
+  }
+
   public get isExecuting() {
-    return this.isExecutingScheduledSubject
-      .asObservable();
+    return this.isExecutingObservable;
   }
 
   public get results() {
@@ -62,17 +111,33 @@ export class ReactiveCommand<TObj, TResult> extends ReactiveState<ReactiveEvent<
       .map(x => x.value.result);
   }
 
-  public get canExecute() {
-    return this.canExecuteObservable;
+  public execute(param?: TParam) {
+    return Observable
+      .defer<TResult>(() => {
+        this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.Begin, param));
+        return Observable.empty<TResult>();
+      })
+      .concat<TResult>(Observable.defer(() => this.executeAction(param)))
+      .do(
+        x => {
+          this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.EndWithResult, param, x));
+        },
+        undefined,
+        () => {
+          this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.Ended, param));
+        }
+      )
+      .catch(err => {
+        this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.EndWithError, param));
+        this.thrownErrorsHandler.next(err);
+        return Observable.throw<TResult>(err);
+      })
+      .publishLast()
+      .refCount();
   }
 
-  public execute(param?: any) {
-    if (this.isExecutingSubject.value === true) {
-      throw 'Command Execution is Already in Progress';
-    }
-
-    this.isExecutingScheduledSubject.next(true);
-
-    this.notifyPropertyChanging(() => new ReactiveEvent(this, { param, result: null }));
+  public executeNow(param?: TParam, observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void), error?: (error: any) => void, complete?: () => void): Subscription {
+    return this.execute(param)
+      .subscribe(observerOrNext, error, complete);
   }
 }

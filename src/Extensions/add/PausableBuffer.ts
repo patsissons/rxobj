@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs/Observable';
-import { pausableBuffer, PausableBufferSignature } from './PausableBuffer';
+import { pausableBuffer, PausableBufferSignature } from '../operators/PausableBuffer';
 
 Observable.prototype.pausableBuffer = pausableBuffer;
 

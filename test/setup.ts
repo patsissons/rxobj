@@ -17,13 +17,37 @@ declare module '~rxjs/Observable' {
 function mochaSubscribe<T>(observerOrNext?: (value: T) => void, done?: (error?: any) => any, error?: (error: any) => void, complete?: () => void): Subscription {
   return (done == null) ?
     (this as Observable<T>).subscribe(observerOrNext, error, complete) :
-    (this as Observable<T>).subscribe(x => {
-      try {
-        observerOrNext.apply(this, [ x ]);
-      } catch (e) {
-        done(e);
+    (this as Observable<T>).flatMap(
+      x => {
+        try {
+          if (observerOrNext != null) {
+            observerOrNext.apply(this, [ x ]);
+          }
+
+          return Observable.of(x);
+        } catch (e) {
+          return Observable.throw(e);
+        }
       }
-    }, error, complete);
+    )
+    .subscribe(
+      undefined,
+      x => {
+        if (error != null) {
+          error(x);
+        }
+
+        done(x);
+      },
+      () => {
+
+        if (complete != null) {
+          complete();
+        }
+
+        done();
+      }
+    );
 }
 
 Observable.prototype.mochaSubscribe = mochaSubscribe;

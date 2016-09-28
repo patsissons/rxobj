@@ -1,7 +1,7 @@
 import { should } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
-import { ReactiveStreamProperty, ReactiveValueProperty } from '../src/ReactiveProperty';
+import { ReactiveProperty, ReactivePropertyEventValue } from '../src/ReactiveProperty';
 
 describe('ReactiveProperty', () => {
   const testOwner = new Object();
@@ -9,32 +9,64 @@ describe('ReactiveProperty', () => {
 
   describe('constructor', () => {
     it('stores the owner', () => {
-      const prop = new ReactiveValueProperty(testOwner);
+      const prop = new ReactiveProperty(testOwner, null);
 
       should.exist(prop.owner);
       prop.owner.should.equal(testOwner);
     });
 
     it('can start with an initial value', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
+    });
+
+    it('can use an observable stream', () => {
+      const prop = new ReactiveProperty(testOwner, undefined, Observable.of(testValue));
+
+      prop.value.should.eql(testValue);
+    });
+
+    it('can use an observable stream with an initial value', () => {
+      const prop = new ReactiveProperty(testOwner, '', Observable.of(testValue));
+
+      prop.value.should.eql(testValue);
     });
   });
 
   describe('value', () => {
     it('can act as a getter', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       should.exist(prop.value);
       prop.value.should.equal(testValue);
+    });
+
+    it('supports value changes using the setter', () => {
+      const prop = new ReactiveProperty(testOwner, '');
+
+      prop.value = testValue;
+
+      prop.value.should.equal(testValue);
+    });
+
+    it('throws an error on set if constructed with an observable stream', () => {
+      const prop = new ReactiveProperty(testOwner, undefined, Observable.of(''));
+      const errors = new BehaviorSubject<Error>(undefined);
+
+      prop.thrownErrors.subscribe(errors);
+
+      prop.value = testValue;
+
+      prop.value.should.not.eql(testValue);
+      should.exist(errors.value);
     });
   });
 
   describe('changing', () => {
     it('can generate notifications with the source and incoming value', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changing.subscribe(x => {
         should.exist(x);
@@ -42,7 +74,8 @@ describe('ReactiveProperty', () => {
         should.exist(x.value);
 
         x.source.should.equal(prop);
-        x.value.should.eql(testValue);
+        x.value.oldValue.should.eql('');
+        x.value.newValue.should.eql(testValue);
 
         done();
       });
@@ -51,14 +84,14 @@ describe('ReactiveProperty', () => {
     });
 
     it('can generate notifications before a value change', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
-      prop.changing.subscribe(x => {
-        x.source.value.should.eql('');
-        x.value.should.eql(testValue);
-
-        done();
-      });
+      prop.changing.take(1).mochaSubscribe(x => {
+        should.exist(x.value);
+        prop.value.should.eql('');
+        x.value.oldValue.should.eql(prop.value);
+        x.value.newValue.should.eql(testValue);
+      }, done);
 
       prop.value = testValue;
     });
@@ -66,7 +99,7 @@ describe('ReactiveProperty', () => {
 
   describe('changed', () => {
     it('can generate notifications with the source and incoming value', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
         should.exist(x);
@@ -74,7 +107,8 @@ describe('ReactiveProperty', () => {
         should.exist(x.value);
 
         x.source.should.equal(prop);
-        x.value.should.eql(testValue);
+        x.value.oldValue.should.eql('');
+        x.value.newValue.should.eql(testValue);
 
         done();
       });
@@ -83,11 +117,13 @@ describe('ReactiveProperty', () => {
     });
 
     it('can generate notifications after a value change', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
-        x.source.value.should.eql(testValue);
-        x.value.should.eql(testValue);
+        should.exist(x.value);
+        prop.value.should.eql(testValue);
+        x.value.oldValue.should.eql('');
+        x.value.newValue.should.eql(prop.value);
 
         done();
       });
@@ -98,7 +134,7 @@ describe('ReactiveProperty', () => {
 
   describe('thrownErrors', () => {
     it('can catch errors in notification handlers', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, '');
+      const prop = new ReactiveProperty(testOwner, '');
 
       prop.changed.subscribe(x => {
         throw 'testError';
@@ -117,13 +153,13 @@ describe('ReactiveProperty', () => {
 
   describe('areChangeNotificationsEnabled', () => {
     it('defaults to true', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       prop.areChangeNotificationsEnabled().should.be.true;
     });
 
     it('is false when suppressed and true otherwise', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       Observable.using(
         () => prop.suppressChangeNotifications(),
@@ -140,13 +176,13 @@ describe('ReactiveProperty', () => {
 
   describe('areChangeNotificationsDelayed', () => {
     it('defaults to false', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       prop.areChangeNotificationsDelayed().should.be.false;
     });
 
     it('is true when delayed and false otherwise', () => {
-      const prop = new ReactiveValueProperty(testOwner, testValue);
+      const prop = new ReactiveProperty(testOwner, testValue);
 
       Observable.using(
         () => prop.delayChangeNotifications(),
@@ -163,124 +199,135 @@ describe('ReactiveProperty', () => {
 
   describe('suppressChangeNotifications', () => {
     it('prevents change notifications completely when suppressed', () => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
-      const subject = new BehaviorSubject<number>(0);
+      const prop = new ReactiveProperty(testOwner, 0);
+      const subject = new BehaviorSubject<ReactivePropertyEventValue<number>>(null);
 
       prop.changed
         .map(x => x.value)
         .subscribe(subject);
 
-      subject.value.should.eql(0);
+      should.not.exist(subject.value);
 
       prop.value = 1;
-      subject.value.should.eql(1);
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
 
       Observable.using(
         () => prop.suppressChangeNotifications(),
         x => {
           prop.value = 2;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           prop.value = 3;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           x.unsubscribe();
         }
       ).subscribe();
 
-      subject.value.should.eql(1);
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
     });
 
     it('handles multiple calls', () => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
-      const subject = new BehaviorSubject<number>(0);
+      const prop = new ReactiveProperty(testOwner, 0);
+      const subject = new BehaviorSubject<ReactivePropertyEventValue<number>>(null);
 
       prop.changed
         .map(x => x.value)
         .subscribe(subject);
 
-      subject.value.should.eql(0);
+      should.not.exist(subject.value);
 
       prop.value = 1;
-      subject.value.should.eql(1);
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
 
       Observable.using(
         () => prop.suppressChangeNotifications(),
         sub1 => {
           prop.value = 2;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           Observable.using(
             () => prop.suppressChangeNotifications(),
             sub2 => {
               prop.value = 3;
-              subject.value.should.eql(1);
+              subject.value.oldValue.should.eql(0);
+              subject.value.newValue.should.eql(1);
 
               sub2.unsubscribe();
             }
           ).subscribe();
 
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           sub1.unsubscribe();
         }
       ).subscribe();
 
-      subject.value.should.eql(1);
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
     });
   });
 
   describe('delayChangeNotifications', () => {
-    it('delays change notifications until disabled', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
-      const subject = new BehaviorSubject<number>(0);
+    it('delays change notifications until disabled', () => {
+      const prop = new ReactiveProperty(testOwner, 0);
+      const subject = new BehaviorSubject<ReactivePropertyEventValue<number>>(null);
 
       prop.changed
         .map(x => x.value)
         .subscribe(subject);
 
-      subject.value.should.eql(0);
+      should.not.exist(subject.value);
 
       prop.value = 1;
-      subject.value.should.eql(1);
-
-      subject
-        .subscribe(x => {
-          if (x === 3) {
-            done();
-          }
-        });
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
 
       Observable.using(
         () => prop.delayChangeNotifications(),
         x => {
           prop.value = 2;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           prop.value = 3;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           x.unsubscribe();
         }
       ).subscribe();
+
+      subject.value.oldValue.should.eql(2);
+      subject.value.newValue.should.eql(3);
     });
 
     it('handles multiple calls', (done) => {
-      const prop = new ReactiveValueProperty(testOwner, 0);
-      const subject = new BehaviorSubject<number>(0);
+      const prop = new ReactiveProperty(testOwner, 0);
+      const subject = new BehaviorSubject<ReactivePropertyEventValue<number>>(null);
 
       prop.changed
         .map(x => x.value)
         .subscribe(subject);
 
-      subject.value.should.eql(0);
+      should.not.exist(subject.value);
 
       prop.value = 1;
-      subject.value.should.eql(1);
+      subject.value.oldValue.should.eql(0);
+      subject.value.newValue.should.eql(1);
 
       subject
         .subscribe(x => {
-          if (x === 3) {
+          if (x.newValue === 3) {
+            subject.value.oldValue.should.eql(2);
+
             done();
           }
         });
@@ -289,58 +336,26 @@ describe('ReactiveProperty', () => {
         () => prop.delayChangeNotifications(),
         sub1 => {
           prop.value = 2;
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           Observable.using(
             () => prop.delayChangeNotifications(),
             sub2 => {
               prop.value = 3;
-              subject.value.should.eql(1);
+              subject.value.oldValue.should.eql(0);
+              subject.value.newValue.should.eql(1);
 
               sub2.unsubscribe();
             }
           ).subscribe();
 
-          subject.value.should.eql(1);
+          subject.value.oldValue.should.eql(0);
+          subject.value.newValue.should.eql(1);
 
           sub1.unsubscribe();
         }
       ).subscribe();
-    });
-  });
-
-  describe('ReactiveStreamProperty', () => {
-    describe('constructor', () => {
-      it('initializes with an observable source', () => {
-        const source = Observable.of(testValue);
-        const prop = new ReactiveStreamProperty(source, testOwner);
-
-        should.exist(prop.source);
-        prop.source.should.equal(source);
-        should.exist(prop.value);
-        prop.value.should.eql(testValue);
-      });
-    });
-  });
-
-  describe('ReactiveValueProperty', () => {
-    describe('constructor', () => {
-      it('initializes with a value handler source', () => {
-        const prop = new ReactiveValueProperty(testOwner);
-
-        should.exist(prop.source);
-      });
-    });
-
-    describe('value', () => {
-      it('can act as a setter', () => {
-        const prop = new ReactiveValueProperty(testOwner);
-
-        prop.value = testValue;
-
-        should.exist(prop.value);
-        prop.value.should.equal(testValue);
-      });
     });
   });
 });

@@ -15,7 +15,6 @@ describe('ReactiveApp', () => {
     });
 
     it('should use console.error by default', () => {
-      // const sandbox = sinon.sandbox.create();
       const stub = sandbox.stub(console, 'error');
       const err = new Error('testing');
 
