@@ -2,7 +2,7 @@ import { should } from '../setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveObject } from '../../src/ReactiveObject';
-import '../../src/Extensions/add/InvokeCommand';
+import '../../src/augmentations/add/InvokeCommand';
 
 describe('InvokeCommand', () => {
   class TestObject extends ReactiveObject {

@@ -1,7 +1,7 @@
 import { should } from '../setup';
 
 import { ReactiveObject } from '../../src/ReactiveObject';
-import '../../src/Extensions/add/ToList';
+import '../../src/augmentations/add/ToList';
 
 describe('ToList', () => {
   class TestObject extends ReactiveObject {

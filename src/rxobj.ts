@@ -7,8 +7,8 @@ export { ReactiveList, ReactiveListChangeAction, ReactiveListEventValue } from '
 export { ReactiveObject } from './ReactiveObject';
 
 // augmentations
-import './Extensions/add/PausableBuffer';
-import './Extensions/add/ToProperty';
-import './Extensions/add/ToList';
-import './Extensions/add/InvokeCommand';
-export * from './Extensions/add/WhenAny';
+import './augmentations/add/PausableBuffer';
+import './augmentations/add/ToProperty';
+import './augmentations/add/ToList';
+import './augmentations/add/InvokeCommand';
+export * from './augmentations/add/WhenAny';

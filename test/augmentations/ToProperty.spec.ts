@@ -2,7 +2,7 @@ import { should } from '../setup';
 
 import { Observable } from 'rxjs';
 import { ReactiveObject } from '../../src/ReactiveObject';
-import '../../src/Extensions/add/ToProperty';
+import '../../src/augmentations/add/ToProperty';
 
 describe('ToProperty', () => {
   class TestObject extends ReactiveObject {

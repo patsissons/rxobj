@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { ReactiveObject } from '../../src/ReactiveObject';
 import { ReactiveEvent } from '../../src/ReactiveEvent';
 import { ReactiveProperty, ReactivePropertyEventValue } from '../../src/ReactiveProperty';
-import '../../src/Extensions/add/WhenAny';
+import '../../src/augmentations/add/WhenAny';
 
 describe('whenAny', () => {
   class TestObject extends ReactiveObject {

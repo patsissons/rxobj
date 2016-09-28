@@ -1,7 +1,7 @@
 import '../setup';
 
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import '../../src/Extensions/add/PausableBuffer';
+import '../../src/augmentations/add/PausableBuffer';
 
 describe('PausableBuffer', () => {
   it('can buffer stream events while paused', () => {
