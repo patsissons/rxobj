@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import { PartialObserver } from 'rxjs/Observer';
 import { Scheduler } from 'rxjs/Scheduler';
+import { Subscription } from 'rxjs/Subscription';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 import { SubjectScheduler } from './SubjectScheduler';
@@ -135,7 +136,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
       .refCount();
   }
 
-  public executeNow(param?: TParam, observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void), error?: (error: any) => void, complete?: () => void) {
+  public executeNow(param?: TParam, observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void), error?: (error: any) => void, complete?: () => void): Subscription {
     return this.execute(param)
       .subscribe(observerOrNext, error, complete);
   }
