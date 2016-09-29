@@ -88,23 +88,25 @@ Given an `Array<T>` instance we can execute `toList` to produce a `ReactiveList`
 
 These augmentations are available both as instance methods on any ReactiveObject as well as static methods applied to the API surface. All of these augmentations take a source state as the first parameter and then produce some observable result. All three of these augmentation variants support a special signature that simply watches the source state for changes and produces the observable result using a delegate function for that source.
 
-* `whenAnyObservable(ReactiveState, (ReactiveState) => TResult): Observable<TResult>`
-* `whenAnyObservable(ReactiveState, (ReactiveState) => Observable<T1>, (T1) => TResult): Observable<TResult>`
-* `whenAnyObservable(ReactiveState, (ReactiveState) => Observable<T1>, (ReactiveState) => Observable<T2>, (T1, T2) => TResult): Observable<TResult>`
+* `whenAnyObservable(any, (any) => TResult): Observable<TResult>`
+* `whenAnyObservable(any, (any) => Observable<T1>, (T1) => TResult): Observable<TResult>`
+* `whenAnyObservable(any, (any) => Observable<T1>, (any) => Observable<T2>, (T1, T2) => TResult): Observable<TResult>`
 
 `whenAnyObservable` functions require that each member delegate returns an observable stream. The combination of values for each stream event will then be remapped to an observable result. ***NOTE*** that due to this variant using observables directly, no results will be generated until all members have generated at least one event. This means that when using this augmentation you may want to use a `startWith` at the end of your observable member composition.
 
-* `whenAnyState(ReactiveState, (ReactiveState) => TResult): Observable<TResult>`
-* `whenAnyState(ReactiveState, (source: TSource) => T1, (T1) => TResult): Observable<TResult>`
-* `whenAnyState(ReactiveState, (source: TSource) => T1, (source: TSource) => T2, (T1, T2) => TResult): Observable<TResult>`
+* `whenAnyState(ReactiveObject, (ReactiveObject) => TResult): Observable<TResult>`
+* `whenAnyState(ReactiveObject, (ReactiveObject) => T1, (T1) => TResult): Observable<TResult>`
+* `whenAnyState(ReactiveObject, (ReactiveObject) => T1, (ReactiveObject) => T2, (T1, T2) => TResult): Observable<TResult>`
 
 `whenAnyState` functions require that each member delegate returns a `ReactiveState` value. This variant will return a result immediately and the mapping function will be passed each member `ReactiveState` for projection. This variant is useful if there is a need project internals of the `ReactiveState` as part of the result observable stream.
 
-* `whenAnyValue(ReactiveState, (ReactiveState) => TResult): Observable<TResult>`
-* `whenAnyValue(ReactiveState, (source: TSource) => T1, (T1) => TResult): Observable<TResult>`
-* `whenAnyValue(ReactiveState, (source: TSource) => T1, (source: TSource) => T2, (T1, T2) => TResult): Observable<TResult>`
+* `whenAnyValue(ReactiveObject, (ReactiveObject) => TResult): Observable<TResult>`
+* `whenAnyValue(ReactiveObject, (ReactiveObject) => T1, (T1) => TResult): Observable<TResult>`
+* `whenAnyValue(ReactiveObject, (ReactiveObject) => T1, (ReactiveObject) => T2, (T1, T2) => TResult): Observable<TResult>`
 
 `whenAnyValue` functions require that each member delgate returns a `ReactiveState` value. This is the most common variant as it will automatically project the `ReactiveState`'s `value` property prior to the final projection delegate. This means that when generating a result observable stream, only the state values are provided. This variant also returns a result immediately, using the current value of each `ReactiveState` member as the initial value.
+
+Currently there are only three overloads of each `whenAny` variant. This will change in the comming future and more will be added, along with an additional overload that is unbounded (but also untyped).
 
 ## Example
 
@@ -147,9 +149,9 @@ export class SearchViewModel extends rxo.ReactiveObject {
       .subscribe(this.thrownErrorsHandler.next);
 
     this
-      .whenAnyValue(this, (x: this) => x.queryText, x => x)
+      .whenAnyValue(this, x => x.queryText, x => x)
       .debounceTime(1000)
-      .invokeCommand(this, (x: this) => x.search);
+      .invokeCommand(this, x => x.search);
   }
 }
 ```
