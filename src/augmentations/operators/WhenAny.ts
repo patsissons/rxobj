@@ -1,29 +1,29 @@
 import { Observable } from 'rxjs';
 import { ReactiveState, AnyReactiveState } from '../../ReactiveState';
-import { ReactiveObjectType } from '../../ReactiveObject';
+import { ReactiveObject } from '../../ReactiveObject';
 
-export interface WhenAnyObservableSignature {
-  <TSource, TResult>(source: TSource, selector: (source: TSource) => TResult): Observable<TResult>;
-  <TSource, T1, TResult>(source: TSource, t1: (source: TSource) => Observable<T1>, selector: (t1: T1) => TResult): Observable<TResult>;
-  <TSource, T1, T2, TResult>(source: TSource, t1: (source: TSource) => Observable<T1>, t2: (source: TSource) => Observable<T2>, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
-  <TSource, T1, T2, T3, TResult>(source: TSource, t1: (source: TSource) => Observable<T1>, t2: (source: TSource) => Observable<T2>, t3: (source: TSource) => Observable<T3>, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
+export interface WhenAnyObservableSignature<TSource extends ReactiveObject> {
+  <TResult>(selector: (source: TSource) => TResult): Observable<TResult>;
+  <T1, TResult>(t1: (source: TSource) => Observable<T1>, selector: (t1: T1) => TResult): Observable<TResult>;
+  <T1, T2, TResult>(t1: (source: TSource) => Observable<T1>, t2: (source: TSource) => Observable<T2>, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
+  <T1, T2, T3, TResult>(t1: (source: TSource) => Observable<T1>, t2: (source: TSource) => Observable<T2>, t3: (source: TSource) => Observable<T3>, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
 }
 
-export interface WhenAnyStateSignature {
-  <TSource extends ReactiveObjectType, TResult>(source: TSource, selector: (source: TSource) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1 extends ReactiveState<TSource, any, any>, TResult>(source: TSource, t1: (source: TSource) => T1, selector: (t1: T1) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1 extends ReactiveState<TSource, any, any>, T2 extends ReactiveState<TSource, any, any>, TResult>(source: TSource, t1: (source: TSource) => T1, t2: (source: TSource) => T2, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1 extends ReactiveState<TSource, any, any>, T2 extends ReactiveState<TSource, any, any>, T3 extends ReactiveState<TSource, any, any>, TResult>(source: TSource, t1: (source: TSource) => T1, t2: (source: TSource) => T2, t3: (source: TSource) => T3, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
+export interface WhenAnyStateSignature<TSource extends ReactiveObject> {
+  <TResult>(selector: (source: TSource) => TResult): Observable<TResult>;
+  <T1 extends ReactiveState<TSource, any, any>, TResult>(t1: (source: TSource) => T1, selector: (t1: T1) => TResult): Observable<TResult>;
+  <T1 extends ReactiveState<TSource, any, any>, T2 extends ReactiveState<TSource, any, any>, TResult>(t1: (source: TSource) => T1, t2: (source: TSource) => T2, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
+  <T1 extends ReactiveState<TSource, any, any>, T2 extends ReactiveState<TSource, any, any>, T3 extends ReactiveState<TSource, any, any>, TResult>(t1: (source: TSource) => T1, t2: (source: TSource) => T2, t3: (source: TSource) => T3, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
 }
 
-export interface WhenAnyValueSignature {
-  <TSource extends ReactiveObjectType, TResult>(source: TSource, selector: (source: TSource) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1, TResult>(source: TSource, t1: (source: TSource) => ReactiveState<TSource, T1, any>, selector: (t1: T1) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1, T2, TResult>(source: TSource, t1: (source: TSource) => ReactiveState<TSource, T1, any>, t2: (source: TSource) => ReactiveState<TSource, T2, any>, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
-  <TSource extends ReactiveObjectType, T1, T2, T3, TResult>(source: TSource, t1: (source: TSource) => ReactiveState<TSource, T1, any>, t2: (source: TSource) => ReactiveState<TSource, T2, any>, t3: (source: TSource) => ReactiveState<TSource, T3, any>, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
+export interface WhenAnyValueSignature<TSource extends ReactiveObject> {
+  <TResult>(selector: (source: TSource) => TResult): Observable<TResult>;
+  <T1, TResult>(t1: (source: TSource) => ReactiveState<TSource, T1, any>, selector: (t1: T1) => TResult): Observable<TResult>;
+  <T1, T2, TResult>(t1: (source: TSource) => ReactiveState<TSource, T1, any>, t2: (source: TSource) => ReactiveState<TSource, T2, any>, selector: (t1: T1, t2: T2) => TResult): Observable<TResult>;
+  <T1, T2, T3, TResult>(t1: (source: TSource) => ReactiveState<TSource, T1, any>, t2: (source: TSource) => ReactiveState<TSource, T2, any>, t3: (source: TSource) => ReactiveState<TSource, T3, any>, selector: (t1: T1, t2: T2, t3: T3) => TResult): Observable<TResult>;
 }
 
-function whenAny(source: any, args: any[], selector: any) {
+function whenAny(source: ReactiveObject, args: any[], selector: any) {
   if (args.length === 0) {
     return (<Observable<any>>source.changed).map(() => source).startWith(source).map(selector);
   }
@@ -33,35 +33,35 @@ function whenAny(source: any, args: any[], selector: any) {
   else {
     args.push(selector);
 
-    return Observable.combineLatest.apply(this, args);
+    return Observable.combineLatest.apply(null, args);
   }
 }
 
-export function whenAnyObservable(source: any, ...members: any[]) {
+export function whenAnyObservable(this: ReactiveObject, ...members: any[]) {
   const selector = members.pop();
 
   const args = (<((s: any) => Observable<any>)[]>members)
-    .map(x => x(source));
+    .map(x => x(this));
 
-  return whenAny(source, args, selector);
+  return whenAny(this, args, selector);
 }
 
-export function whenAnyState(source: any, ...members: any[]) {
+export function whenAnyState(this: ReactiveObject, ...members: any[]) {
   const selector = members.pop();
 
   const args = (<((s: any) => AnyReactiveState)[]>members)
-    .map(x => x(source))
+    .map(x => x(this))
     .map(x => x.changed.map(y => y.source).startWith(x));
 
-  return whenAny(source, args, selector);
+  return whenAny(this, args, selector);
 }
 
-export function whenAnyValue(source: any, ...members: any[]) {
+export function whenAnyValue(this: ReactiveObject, ...members: any[]) {
   const selector = members.pop();
 
   const args = (<((s: any) => AnyReactiveState)[]>members)
-    .map(x => x(source))
+    .map(x => x(this))
     .map(x => x.changed.map(y => x.value).startWith(x.value));
 
-  return whenAny(source, args, selector);
+  return whenAny(this, args, selector);
 }

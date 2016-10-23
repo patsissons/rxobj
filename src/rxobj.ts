@@ -11,4 +11,4 @@ import './augmentations/add/PausableBuffer';
 import './augmentations/add/ToProperty';
 import './augmentations/add/ToList';
 import './augmentations/add/InvokeCommand';
-export * from './augmentations/add/WhenAny';
+import './augmentations/add/WhenAny';

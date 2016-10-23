@@ -1,24 +1,14 @@
 import { ReactiveObject } from '../../ReactiveObject';
 import { whenAnyObservable, whenAnyState, whenAnyValue, WhenAnyObservableSignature, WhenAnyStateSignature, WhenAnyValueSignature } from '../operators/WhenAny';
 
-ReactiveObject.prototype.whenAnyObservable = whenAnyObservable;
-ReactiveObject.prototype.whenAnyState = whenAnyState;
-ReactiveObject.prototype.whenAnyValue = whenAnyValue;
+ReactiveObject.prototype.whenAnyObservable = <any>whenAnyObservable;
+ReactiveObject.prototype.whenAnyState = <any>whenAnyState;
+ReactiveObject.prototype.whenAnyValue = <any>whenAnyValue;
 
 declare module '../../ReactiveObject' {
   interface ReactiveObject {
-    whenAnyObservable: WhenAnyObservableSignature;
-    whenAnyState: WhenAnyStateSignature;
-    whenAnyValue: WhenAnyValueSignature;
+    whenAnyObservable: WhenAnyObservableSignature<this>;
+    whenAnyState: WhenAnyStateSignature<this>;
+    whenAnyValue: WhenAnyValueSignature<this>;
   }
 }
-
-const whenAnyObservableFunction: WhenAnyObservableSignature = whenAnyObservable;
-const whenAnyEventFunction: WhenAnyStateSignature = whenAnyState;
-const whenAnyValueFunction: WhenAnyValueSignature = whenAnyValue;
-
-export {
-  whenAnyObservableFunction as whenAnyObservable,
-  whenAnyEventFunction as whenAnyState,
-  whenAnyValueFunction as whenAnyValue,
-};

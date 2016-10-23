@@ -20,7 +20,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyObservable(obj, x => x)
+        .whenAnyObservable(x => x)
         .do(() => ++count)
         .subscribe(events);
 
@@ -42,7 +42,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyObservable(obj, x => x.testProp1.changed, (testProp1) => ({ testProp1 }))
+        .whenAnyObservable(x => x.testProp1.changed, (testProp1) => ({ testProp1 }))
         .do(() => ++count)
         .subscribe(events);
 
@@ -68,7 +68,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyObservable(obj, x => x.testProp1.changed, x => x.testProp2.changed, (testProp1, testProp2) => ({ testProp1, testProp2 }))
+        .whenAnyObservable(x => x.testProp1.changed, x => x.testProp2.changed, (testProp1, testProp2) => ({ testProp1, testProp2 }))
         .do(() => ++count)
         .subscribe(events);
 
@@ -100,7 +100,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyState(obj, x => x)
+        .whenAnyState(x => x)
         .do(() => ++count)
         .subscribe(events);
 
@@ -122,7 +122,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyState(obj, x => x.testProp1, (testProp1) => ({ testProp1 }))
+        .whenAnyState(x => x.testProp1, (testProp1) => ({ testProp1 }))
         .do(() => ++count)
         .subscribe(events);
 
@@ -147,7 +147,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyState(obj, x => x.testProp1, x => x.testProp2, (testProp1, testProp2) => ({ testProp1, testProp2 }))
+        .whenAnyState(x => x.testProp1, x => x.testProp2, (testProp1, testProp2) => ({ testProp1, testProp2 }))
         .do(() => ++count)
         .subscribe(events);
 
@@ -181,7 +181,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyValue(obj, x => x)
+        .whenAnyValue(x => x)
         .do(() => ++count)
         .subscribe(events);
 
@@ -203,7 +203,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyValue(obj, x => x.testProp1, (testProp1) => ({ testProp1 }))
+        .whenAnyValue(x => x.testProp1, (testProp1) => ({ testProp1 }))
         .do(() => ++count)
         .subscribe(events);
 
@@ -227,7 +227,7 @@ describe('whenAny', () => {
       let count = 0;
 
       obj
-        .whenAnyValue(obj, x => x.testProp1, x => x.testProp2, (testProp1, testProp2) => ({ testProp1, testProp2 }))
+        .whenAnyValue(x => x.testProp1, x => x.testProp2, (testProp1, testProp2) => ({ testProp1, testProp2 }))
         .do(() => ++count)
         .subscribe(events);
 
