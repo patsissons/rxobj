@@ -214,7 +214,7 @@ gulp.task('typescript:lib', [ 'typescript:lib:ES5', 'typescript:lib:ES6' ]);
 gulp.task('typescript:lib:ES5', () => {
   log('Compiling to ES5...');
 
-  const tsconfig = typescript.createProject(files.tsconfig, {
+  const tsProject = typescript.createProject(files.tsconfig, {
     target: 'ES5',
   });
 
@@ -227,7 +227,7 @@ gulp.task('typescript:lib:ES5', () => {
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: path.resolve(config.paths.src) })
     .pipe(sourcemaps.init())
-    .pipe(typescript(tsconfig))
+    .pipe(tsProject())
     .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
     .pipe(gulp.dest(outDir));
 });
@@ -235,7 +235,7 @@ gulp.task('typescript:lib:ES5', () => {
 gulp.task('typescript:lib:ES6', () => {
   log('Compiling to ES6...');
 
-  const tsconfig = typescript.createProject(files.tsconfig, {
+  const tsProject = typescript.createProject(files.tsconfig, {
     target: 'ES6',
     module: 'es2015',
   });
@@ -253,7 +253,7 @@ gulp.task('typescript:lib:ES6', () => {
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: path.resolve(config.paths.src) })
     .pipe(sourcemaps.init())
-    .pipe(typescript(tsconfig))
+    .pipe(tsProject())
     .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
     .pipe(gulp.dest(outDir));
 });
@@ -261,7 +261,7 @@ gulp.task('typescript:lib:ES6', () => {
 gulp.task('typescript:bundle', () => {
   log('Compiling to js bundle...');
 
-  const tsconfig = typescript.createProject(files.tsconfig, {
+  const tsProject = typescript.createProject(files.tsconfig, {
     module: 'system',
     outFile: files.bundle,
   });
@@ -275,7 +275,7 @@ gulp.task('typescript:bundle', () => {
       `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
     ], { base: path.resolve(config.paths.src) })
     .pipe(sourcemaps.init())
-    .pipe(typescript(tsconfig))
+    .pipe(tsProject())
     .pipe(uglify())
     .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
     .pipe(gulp.dest(outDir));
@@ -284,7 +284,7 @@ gulp.task('typescript:bundle', () => {
 gulp.task('typescript:typings', () => {
   log('Compiling typescript typings...');
 
-  const tsconfig = typescript.createProject(files.tsconfig, {
+  const tsProject = typescript.createProject(files.tsconfig, {
     target: 'ES5',
     module: 'system',
     declaration: true,
@@ -296,7 +296,7 @@ gulp.task('typescript:typings', () => {
       path.resolve(config.paths.typings, 'index.d.ts'),
       path.resolve(config.paths.src, 'rxobj.ts'),
     ])
-    .pipe(typescript(tsconfig))
+    .pipe(tsProject())
     .dts
     .pipe(gulp.dest(path.resolve(config.paths.build, 'typings')));
 });
@@ -304,7 +304,7 @@ gulp.task('typescript:typings', () => {
 gulp.task('typescript:test', () => {
   log('Compiling typescript tests...');
 
-  const tsconfig = typescript.createProject(files.tsconfig, {
+  const tsProject = typescript.createProject(files.tsconfig, {
     target: 'ES5',
   });
 
@@ -318,7 +318,7 @@ gulp.task('typescript:test', () => {
       path.resolve(config.paths.test, '**', '*.ts'),
     ], { base: '.' })
     .pipe(sourcemaps.init())
-    .pipe(typescript(tsconfig))
+    .pipe(tsProject())
     .pipe(sourcemaps.write('.', { sourceRoot: path.resolve('.') }))
     .pipe(gulp.dest(outDir));
 });
