@@ -119,7 +119,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
       })
       .concat<TResult>(Observable.defer(() => this.executeAction(param)))
       .do(
-        x => {
+        (x: TResult) => {
           this.executionStateSubject.next(new ExecutionState<TParam, TResult>(ExecutionDemarcation.EndWithResult, param, x));
         },
         undefined,
