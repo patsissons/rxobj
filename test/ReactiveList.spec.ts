@@ -1,4 +1,4 @@
-import { should } from './setup';
+import { should, subscribeNotCalledError } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveList, ReactiveListChangeAction } from '../src/ReactiveList';
@@ -83,15 +83,17 @@ describe('ReactiveList', () => {
     it('generates a reset notification', (done) => {
       const testArray = [ testValue ];
       const list = new ReactiveList(testOwner, testArray);
+      let error = subscribeNotCalledError;
 
-      list.changed
-        .mochaSubscribe(x => {
+      const sub = list.changed
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
           x.value.action.should.eql(ReactiveListChangeAction.Reset);
-
-          done();
-        }, done);
+        });
 
       list.clear();
+      sub.unsubscribe();
     });
   });
 
@@ -109,15 +111,17 @@ describe('ReactiveList', () => {
       const array1 = [ 1 ];
       const array2 = [ 2 ];
       const list = new ReactiveList(testOwner, array1);
+      let error = subscribeNotCalledError;
 
-      list.changed
-        .mochaSubscribe(x => {
+      const sub = list.changed
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
           x.value.action.should.eql(ReactiveListChangeAction.Reset);
-
-          done();
-        }, done);
+        });
 
       list.reset(...array2);
+      sub.unsubscribe();
     });
   });
 
@@ -144,17 +148,20 @@ describe('ReactiveList', () => {
     it('can generate notifications before a value change', (done) => {
       const emptyArray = <string[]>[];
       const list = new ReactiveList(testOwner, emptyArray);
+      let error = subscribeNotCalledError;
 
-      list.changing.mochaSubscribe(x => {
-        x.source.length.should.eql(0);
-        x.value.newItems.length.should.eql(1);
-        x.value.newItems[0].should.eql(testValue);
-        x.source.asArray().length.should.eql(0);
-
-        done();
-      }, done);
+      const sub = list.changing
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
+          x.source.length.should.eql(0);
+          x.value.newItems.length.should.eql(1);
+          x.value.newItems[0].should.eql(testValue);
+          x.source.asArray().length.should.eql(0);
+        });
 
       list.push(testValue);
+      sub.unsubscribe();
     });
   });
 
@@ -181,17 +188,20 @@ describe('ReactiveList', () => {
     it('can generate notifications after a value change', (done) => {
       const emptyArray = <string[]>[];
       const list = new ReactiveList(testOwner, emptyArray);
+      let error = subscribeNotCalledError;
 
-      list.changed.mochaSubscribe(x => {
-        x.source.length.should.eql(1);
-        x.value.newItems.length.should.eql(1);
-        x.value.newItems[0].should.eql(testValue);
-        x.source.asArray().length.should.eql(1);
-
-        done();
-      }, done);
+      const sub = list.changed
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
+          x.source.length.should.eql(1);
+          x.value.newItems.length.should.eql(1);
+          x.value.newItems[0].should.eql(testValue);
+          x.source.asArray().length.should.eql(1);
+        });
 
       list.push(testValue);
+      sub.unsubscribe();
     });
   });
 
@@ -252,6 +262,7 @@ describe('ReactiveList', () => {
       const emptyArray = <string[]>[];
       const list = new ReactiveList(testOwner, emptyArray);
       const subject = new BehaviorSubject<number>(0);
+      let error = subscribeNotCalledError;
 
       list.changed
         .map(x => x.source.length)
@@ -262,14 +273,14 @@ describe('ReactiveList', () => {
       list.push(testValue);
       subject.value.should.eql(1);
 
-      subject
+      const sub = subject
         .map((length, i) => ({ length, i }))
         .filter(x => x.i === 2)
-        .mochaSubscribe(x => {
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
           x.length.should.eql(3);
-
-          done();
-        }, done);
+        });
 
       Observable.using(
         () => list.delayChangeNotifications(),
@@ -283,6 +294,8 @@ describe('ReactiveList', () => {
           x.unsubscribe();
         }
       ).subscribe();
+
+      sub.unsubscribe();
     });
   });
 

@@ -1,4 +1,4 @@
-import { should } from './setup';
+import { should, subscribeNotCalledError } from './setup';
 
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ReactiveProperty, ReactivePropertyEventValue } from '../src/ReactiveProperty';
@@ -85,13 +85,18 @@ describe('ReactiveProperty', () => {
 
     it('can generate notifications before a value change', (done) => {
       const prop = new ReactiveProperty(testOwner, '');
+      let error = subscribeNotCalledError;
 
-      prop.changing.take(1).mochaSubscribe(x => {
-        should.exist(x.value);
-        prop.value.should.eql('');
-        x.value.oldValue.should.eql(prop.value);
-        x.value.newValue.should.eql(testValue);
-      }, done);
+      prop.changing
+        .take(1)
+        .finally(() => done(error))
+        .subscribe(x => {
+          error = null;
+          should.exist(x.value);
+          prop.value.should.eql('');
+          x.value.oldValue.should.eql(prop.value);
+          x.value.newValue.should.eql(testValue);
+        });
 
       prop.value = testValue;
     });
