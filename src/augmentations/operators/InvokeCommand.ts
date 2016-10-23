@@ -2,7 +2,12 @@ import { Observable, Subscription } from 'rxjs';
 import { ReactiveCommand } from '../../ReactiveCommand';
 import { ReactiveObject, ReactiveObjectType } from '../../ReactiveObject';
 
-function invokeCommandFromObservable<TObj, TParam, TResult>(source: Observable<{ param: TParam, cmd: ReactiveCommand<TObj, TParam, TResult> }>) {
+interface CommandWithParameter<TObj extends ReactiveObject, TParam, TResult> {
+  cmd: ReactiveCommand<TObj, TParam, TResult>;
+  param: TParam;
+}
+
+function invokeCommandFromObservable<TObj extends ReactiveObject, TParam, TResult>(source: Observable<CommandWithParameter<TObj, TParam, TResult>>) {
   return source
     // TODO: why is throttle typing so strange here???
     .throttle(x => x.cmd.canExecute.map(() => 0))
