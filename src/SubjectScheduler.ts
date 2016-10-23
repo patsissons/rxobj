@@ -11,8 +11,11 @@ export class SubjectScheduler<TValue> extends Subscription implements Subscribab
     this.add(this.subject);
 
     if (this.defaultObserverOrNext != null) {
-      this.defaultObserverSub = this.asObservable()
-        .subscribe(defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next);
+      const obs = this.asObservable();
+
+      this.defaultObserverSub = obs
+        .subscribe
+        .apply(obs, [ defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next ]);
     }
   }
 
@@ -45,15 +48,18 @@ export class SubjectScheduler<TValue> extends Subscription implements Subscribab
 
     ++this.observerRefCount;
 
-    const sub = this.asObservable()
-      .subscribe(observerOrNext, error, complete);
+    const obs = this.asObservable();
+    const sub = <Subscription>obs
+      .subscribe
+      .apply(obs, [ observerOrNext, error, complete ]);
 
     sub.add(new Subscription(() => {
       if (--this.observerRefCount <= 0 && this.defaultObserverOrNext != null) {
         this.observerRefCount = 0;
 
-        this.defaultObserverSub = this.asObservable()
-          .subscribe(this.defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next);
+        this.defaultObserverSub = <Subscription>obs
+          .subscribe
+          .apply(obs, [ this.defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next ]);
       }
     }));
 

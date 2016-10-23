@@ -137,7 +137,10 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
   }
 
   public executeNow(param?: TParam, observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void), error?: (error: any) => void, complete?: () => void): Subscription {
-    return this.execute(param)
-      .subscribe(observerOrNext, error, complete);
+    const obs = this.execute(param);
+
+    return <Subscription>obs
+      .subscribe
+      .apply(obs, [ observerOrNext, error, complete ]);
   }
 }
