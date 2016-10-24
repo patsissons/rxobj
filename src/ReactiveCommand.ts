@@ -4,7 +4,7 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { Subscription } from 'rxjs/Subscription';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
-import { SubjectScheduler } from './SubjectScheduler';
+import { ScheduledSubject } from './ScheduledSubject';
 
 export interface ReactiveCommandEventValue<TParam, TResult> {
   param: TParam;
@@ -39,10 +39,9 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
   constructor(owner: TObject, protected executeAction: (param: TParam) => Observable<TResult>, canExecute: Observable<boolean> = Observable.of(true), scheduler?: Scheduler, errorScheduler?: Scheduler) {
     super(owner, scheduler, errorScheduler);
 
-    this.executionStateSubject = new SubjectScheduler<ExecutionState<TParam, TResult>>(scheduler);
+    this.executionStateSubject = new ScheduledSubject<ExecutionState<TParam, TResult>>(scheduler);
 
     this.isExecutingObservable = this.executionStateSubject
-      .asObservable()
       .map(x => x.demarcation === ExecutionDemarcation.Begin)
       .startWith(false)
       .distinctUntilChanged()
@@ -65,7 +64,6 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
 
     this.add(
       this.executionStateSubject
-        .asObservable()
         .filter(x => x.demarcation === ExecutionDemarcation.Begin)
         .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
           param: x.param,
@@ -77,7 +75,6 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
 
     this.add(
       this.executionStateSubject
-        .asObservable()
         .filter(x => x.demarcation === ExecutionDemarcation.EndWithResult)
         .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
           param: x.param,
@@ -89,7 +86,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
     );
   }
 
-  private executionStateSubject: SubjectScheduler<ExecutionState<TParam, TResult>>;
+  private executionStateSubject: ScheduledSubject<ExecutionState<TParam, TResult>>;
   private isExecutingObservable: Observable<boolean>;
   private canExecuteObservable: Observable<boolean>;
 

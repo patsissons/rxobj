@@ -1,6 +1,6 @@
 import { Subscription, Observable, Subject } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
-import { SubjectScheduler } from './SubjectScheduler';
+import { ScheduledSubject } from './ScheduledSubject';
 import { ReactiveApp } from './ReactiveApp';
 import { ReactiveEvent } from './ReactiveEvent';
 
@@ -53,9 +53,9 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
     super();
 
     this.startDelayNotificationsSubject = new Subject<any>();
-    this.changingSubject = new SubjectScheduler<ReactiveEvent<this, TEventValue>>(scheduler);
-    this.changedSubject = new SubjectScheduler<ReactiveEvent<this, TEventValue>>(scheduler);
-    this.thrownErrorsHandler = new SubjectScheduler<Error>(errorScheduler, ReactiveApp.defaultErrorHandler.next);
+    this.changingSubject = new ScheduledSubject<ReactiveEvent<this, TEventValue>>(scheduler);
+    this.changedSubject = new ScheduledSubject<ReactiveEvent<this, TEventValue>>(scheduler);
+    this.thrownErrorsHandler = new ScheduledSubject<Error>(errorScheduler, ReactiveApp.defaultErrorHandler.next);
 
     this.add(this.startDelayNotificationsSubject);
     this.add(this.changingSubject);
@@ -90,10 +90,10 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
   private changeNotificationsDelayed = 0;
   private startDelayNotificationsSubject: Subject<any>;
 
-  protected changingSubject: SubjectScheduler<ReactiveEvent<this, TEventValue>>;
-  protected changedSubject: SubjectScheduler<ReactiveEvent<this, TEventValue>>;
+  protected changingSubject: ScheduledSubject<ReactiveEvent<this, TEventValue>>;
+  protected changedSubject: ScheduledSubject<ReactiveEvent<this, TEventValue>>;
 
-  protected thrownErrorsHandler: SubjectScheduler<Error>;
+  protected thrownErrorsHandler: ScheduledSubject<Error>;
   protected changingObservable: Observable<ReactiveEvent<this, TEventValue>>;
   protected changedObservable: Observable<ReactiveEvent<this, TEventValue>>;
 
@@ -113,7 +113,7 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
     return this.notifyObservable(changed, this.changedSubject, x => { this.lastEvent = x; });
   }
 
-  protected notifyObservable(change: () => ReactiveEvent<this, TEventValue>, subject: SubjectScheduler<ReactiveEvent<this, TEventValue>>, before?: (value: TEventValue) => void) {
+  protected notifyObservable(change: () => ReactiveEvent<this, TEventValue>, subject: ScheduledSubject<ReactiveEvent<this, TEventValue>>, before?: (value: TEventValue) => void) {
     try {
       const event = <ReactiveEvent<this, TEventValue>>change.apply(this);
 

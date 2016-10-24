@@ -1,13 +1,13 @@
 import './setup';
-import { SubjectScheduler } from '../src/SubjectScheduler';
+import { ScheduledSubject } from '../src/ScheduledSubject';
 import { ReactiveApp } from '../src/ReactiveApp';
 import { Observable, BehaviorSubject } from 'rxjs';
 
-describe('SubjectScheduler', () => {
+describe('ScheduledSubject', () => {
   describe('next', () => {
     it('passes calls to internal subject', () => {
       const subject = new BehaviorSubject(0);
-      const ss = new SubjectScheduler(ReactiveApp.mainScheduler, null, subject);
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
 
       ss.next(1);
       subject.value.should.eql(1);
@@ -17,7 +17,7 @@ describe('SubjectScheduler', () => {
   describe('error', () => {
     it('passes calls to internal subject', (done) => {
       const subject = new BehaviorSubject(0);
-      const ss = new SubjectScheduler(ReactiveApp.mainScheduler, null, subject);
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
 
       ss.subscribe(() => null, x => {
         x.should.eql(1);
@@ -34,7 +34,7 @@ describe('SubjectScheduler', () => {
   describe('complete', () => {
     it('passes calls to internal subject', (done) => {
       const subject = new BehaviorSubject(0);
-      const ss = new SubjectScheduler(ReactiveApp.mainScheduler, null, subject);
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
 
       ss.subscribe(() => null, () => null, () => {
         done();
@@ -48,7 +48,7 @@ describe('SubjectScheduler', () => {
     it('unsubscribes the default observer', () => {
       const subject1 = new BehaviorSubject(0);
       const subject2 = new BehaviorSubject(0);
-      const ss = new SubjectScheduler(ReactiveApp.mainScheduler, subject1);
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, subject1);
 
       ss.next(1);
       subject1.value.should.eql(1);
@@ -63,7 +63,7 @@ describe('SubjectScheduler', () => {
     it('re-subscribes the default observer', () => {
       const subject1 = new BehaviorSubject(0);
       const subject2 = new BehaviorSubject(0);
-      const ss = new SubjectScheduler(ReactiveApp.mainScheduler, subject1);
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, subject1);
 
       ss.next(1);
       subject1.value.should.eql(1);

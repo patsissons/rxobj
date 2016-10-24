@@ -95,6 +95,21 @@ describe('ReactiveCommand', () => {
 
       cmd.execute().subscribe(undefined, undefined, done);
     });
+
+    it('handles errors', () => {
+      const errors = new BehaviorSubject<Error>(null);
+      const canExecute = Observable.throw<boolean>('test').publish();
+      const cmd = new ReactiveCommand(testOwner, x => {
+        return Observable.of(true);
+      }, canExecute);
+
+      cmd.thrownErrors.asObservable().subscribe(errors);
+
+      canExecute.connect();
+
+      should.exist(errors.value);
+      errors.value.should.eql('test');
+    });
   });
 
   describe('isExecuting', () => {

@@ -32,7 +32,7 @@
     "./src/ReactiveProperty.ts",
     "./src/ReactiveState.ts",
     "./src/rxobj.ts",
-    "./src/SubjectScheduler.ts",
+    "./src/ScheduledSubject.ts",
     "./test/augmentations/InvokeCommand.spec.ts",
     "./test/augmentations/PausableBuffer.spec.ts",
     "./test/augmentations/ToList.spec.ts",
@@ -47,7 +47,7 @@
     "./test/ReactiveObject.spec.ts",
     "./test/ReactiveProperty.spec.ts",
     "./test/Sanity.spec.ts",
-    "./test/setup.ts",
-    "./test/SubjectScheduler.spec.ts"
+    "./test/ScheduledSubject.spec.ts",
+    "./test/setup.ts"
   ]
 }
