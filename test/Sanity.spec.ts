@@ -1,4 +1,5 @@
 import { should, sandbox } from './setup';
+import { Observable } from 'rxjs';
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {
@@ -34,6 +35,19 @@ describe('Sanity Tests', () => {
       stub();
 
       stub.should.have.been.calledOnce;
+    });
+  });
+
+  describe('for rxjs', () => {
+    it('can simulate time for long running observables', (done) => {
+      const timer = sandbox.useFakeTimers();
+
+      Observable
+        .interval(5000)
+        .take(1)
+        .subscribe(() => done());
+
+      timer.tick(6000);
     });
   });
 });
