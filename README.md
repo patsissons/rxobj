@@ -114,16 +114,16 @@ A simple example based on the [ReactiveUI](http://reactiveui.net/) example.
 
 ```ts
 import { Observable } from 'rxjs';
-import * as rxo from 'rxobj';
+import { ReactiveObject, ReactiveProperty, ReactiveCommand, ReactiveList } from 'rxobj';
 
 export interface SearchService {
   getResults(query: string): Observable<string[]>;
 }
 
-export class SearchViewModel extends rxo.ReactiveObject {
-  public queryText: rxo.ReactiveProperty<this, string>;
-  public search: rxo.ReactiveCommand<this, string, string[]>;
-  public searchResults: rxo.ReactiveList<this, string>;
+export class SearchViewModel extends ReactiveObject {
+  public queryText: ReactiveProperty<this, string>;
+  public search: ReactiveCommand<this, string, string[]>;
+  public searchResults: ReactiveList<this, string>;
 
   constructor(private searchService: SearchService) {
     super();
@@ -132,11 +132,13 @@ export class SearchViewModel extends rxo.ReactiveObject {
     this.searchResults = this.list<string>();
 
     const canSearch = this
-      .whenAnyValue(this, (x: this) => x.queryText, x => x != null && x.trim().length > 0)
-      .distinctUntilChanged()
-      .startWith((this.queryText.value || '').length > 0);
+      .whenAnyValue(x => x.queryText, x => x != null && x.trim().length > 0)
+      .distinctUntilChanged();
 
-    this.search = this.command((queryText: string) => this.searchService.getResults(queryText), canSearch);
+    this.search = this
+      .command((queryText: string) => {
+        return this.searchService.getResults(queryText);
+      }, canSearch);
 
     this.add(
       this.search.results
@@ -145,11 +147,13 @@ export class SearchViewModel extends rxo.ReactiveObject {
         })
     );
 
-    this.search.thrownErrors
+    this
+      .whenAnyObservable(x => x.search.thrownErrors.asObservable(), x => x)
       .subscribe(this.thrownErrorsHandler.next);
 
     this
-      .whenAnyValue(this, x => x.queryText, x => x)
+      .whenAnyValue(x => x.queryText, x => x)
+      .filter(x => (x || '').length > 0)
       .debounceTime(1000)
       .invokeCommand(this, x => x.search);
   }
