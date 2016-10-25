@@ -33,6 +33,10 @@ export class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject
     return event.source;
   }
 
+  protected get areMemberNamesResolved() {
+    return this.objectMembers.length === 0 || (this.objectMembers[0].name || '').length > 0;
+  }
+
   protected resolveMemberNames() {
     Object
       .getOwnPropertyNames(this)
@@ -86,5 +90,16 @@ export class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject
 
   public get members() {
     return this.objectMembers.slice();
+  }
+
+  delayChangeNotifications() {
+    // it's possible to unsub from this delay before any notifications
+    // are emitted, which means we need to explicitly check for member
+    // name resolution.
+    if (this.areMemberNamesResolved === false) {
+      this.resolveMemberNames();
+    }
+
+    return super.delayChangeNotifications();
   }
 }
