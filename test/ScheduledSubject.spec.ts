@@ -1,7 +1,7 @@
 import './setup';
 import { ScheduledSubject } from '../src/ScheduledSubject';
 import { ReactiveApp } from '../src/ReactiveApp';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 
 describe('ScheduledSubject', () => {
   describe('next', () => {
@@ -82,6 +82,27 @@ describe('ScheduledSubject', () => {
       ss.next(3);
       subject1.value.should.eql(3);
       subject2.value.should.eql(2);
+    });
+  });
+
+  describe('unsubscribe', () => {
+    it('closes the subscription', () => {
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler);
+
+      ss.closed.should.be.false;
+
+      ss.unsubscribe();
+      ss.closed.should.be.true;
+    });
+
+    it('unsubscribes the internal subject', () => {
+      const subject = new Subject();
+      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, undefined, subject);
+
+      subject.closed.should.be.false;
+
+      ss.unsubscribe();
+      subject.closed.should.be.true;
     });
   });
 });
