@@ -1,6 +1,6 @@
 import { should } from './setup';
 
-import { Observable } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ReactiveObject, registerMember } from '../src/ReactiveObject';
 
 describe('ReactiveObject', () => {
@@ -196,6 +196,49 @@ describe('ReactiveObject', () => {
 
       should.exist(child.owner);
       child.owner.should.eql(obj);
+    });
+  });
+
+  describe('name', () => {
+    it('can only be set once', () => {
+      const obj = new BasicReactiveObject();
+
+      obj.name = 'asdf';
+      should.throw(() => { obj.name = 'asdf2'; });
+    });
+  });
+
+  describe('delayChangeNotifications', () => {
+    class TestObject extends BasicReactiveObject {
+      public prop1 = this.property<number>();
+      public prop2 = this.property<number>();
+    }
+
+    it('de-duplicates member changed events by name', () => {
+      const obj = new TestObject();
+      const subject = new BehaviorSubject<string[]>(null);
+      const end = new Subject();
+
+      obj.changed
+        .map(x => x.value.name)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => obj.delayChangeNotifications(),
+        x => {
+          obj.prop1.value = 1;
+          obj.prop2.value = 2;
+          obj.prop1.value = 3;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      should.exist(subject.value);
+      subject.value.should.eql([ 'prop1', 'prop2' ]);
     });
   });
 });
