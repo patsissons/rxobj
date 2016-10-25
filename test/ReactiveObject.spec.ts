@@ -214,6 +214,33 @@ describe('ReactiveObject', () => {
       public prop2 = this.property<number>();
     }
 
+    it('de-duplicates member changing events by name', () => {
+      const obj = new TestObject();
+      const subject = new BehaviorSubject<string[]>(null);
+      const end = new Subject();
+
+      obj.changing
+        .map(x => x.value.name)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => obj.delayChangeNotifications(),
+        x => {
+          obj.prop1.value = 1;
+          obj.prop2.value = 2;
+          obj.prop1.value = 3;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      should.exist(subject.value);
+      subject.value.should.eql([ 'prop1', 'prop2' ]);
+    });
+
     it('de-duplicates member changed events by name', () => {
       const obj = new TestObject();
       const subject = new BehaviorSubject<string[]>(null);
@@ -239,6 +266,31 @@ describe('ReactiveObject', () => {
       end.next();
       should.exist(subject.value);
       subject.value.should.eql([ 'prop1', 'prop2' ]);
+    });
+
+    it('de-duplicates a single event', () => {
+      const obj = new TestObject();
+      const subject = new BehaviorSubject<string[]>(null);
+      const end = new Subject();
+
+      obj.changed
+        .map(x => x.value.name)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => obj.delayChangeNotifications(),
+        x => {
+          obj.prop1.value = 1;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      should.exist(subject.value);
+      subject.value.should.eql([ 'prop1' ]);
     });
   });
 });
