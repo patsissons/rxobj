@@ -21,8 +21,8 @@ function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
     // dedup based on the member name
     batch
       .forEach(x => {
-        if (seen[x.source.name] == null) {
-          seen[x.source.name] = x;
+        if (seen[x.value.name] == null) {
+          seen[x.value.name] = x;
           result.push(x);
         }
       });
