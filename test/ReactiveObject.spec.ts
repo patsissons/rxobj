@@ -1,7 +1,7 @@
 import { should } from './setup';
 
 import { Observable } from 'rxjs';
-import { ReactiveObject } from '../src/ReactiveObject';
+import { ReactiveObject, registerMember } from '../src/ReactiveObject';
 
 describe('ReactiveObject', () => {
   class BasicReactiveObject extends ReactiveObject {
@@ -183,6 +183,19 @@ describe('ReactiveObject', () => {
 
       should.exist(obj.value);
       obj.value.should.eql(obj);
+    });
+  });
+
+  describe('registerMember', () => {
+    it('assigns the member owner', () => {
+      const obj = new BasicReactiveObject();
+      const child = new BasicReactiveObject();
+
+      should.not.exist(child.owner);
+      registerMember(obj, child);
+
+      should.exist(child.owner);
+      child.owner.should.eql(obj);
     });
   });
 });
