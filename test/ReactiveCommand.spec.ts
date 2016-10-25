@@ -6,6 +6,22 @@ import { ReactiveCommand } from '../src/ReactiveCommand';
 describe('ReactiveCommand', () => {
   const testOwner = new Object();
 
+  describe('value', () => {
+    it('returns null if never executed', () => {
+      const cmd = new ReactiveCommand(testOwner, x => Observable.of(true));
+
+      should.not.exist(cmd.value);
+    });
+
+    it('returns the most recent result', () => {
+      const cmd = new ReactiveCommand(testOwner, x => Observable.of(true));
+      cmd.executeNow();
+
+      should.exist(cmd.value);
+      cmd.value.should.be.true;
+    });
+  });
+
   describe('canExecute', () => {
     it('is always true if not provided at construction', (done) => {
       const cmd = new ReactiveCommand(testOwner, x => Observable.of(true));

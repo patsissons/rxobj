@@ -24,6 +24,16 @@ describe('ReactiveList', () => {
     });
   });
 
+  describe('value', () => {
+    it('returns the inner array', () => {
+      const testArray = [ testValue ];
+      const list = new ReactiveList(testOwner, testArray);
+
+      should.exist(list.value);
+      list.value.should.eql(testArray);
+    });
+  });
+
   describe('get', () => {
     it('mirrors the array indexer implementation', () => {
       const testArray = [ testValue ];
@@ -298,8 +308,6 @@ describe('ReactiveList', () => {
       sub.unsubscribe();
     });
   });
-
-
 
   describe('Array<T> Facade', () => {
     describe('length', () => {

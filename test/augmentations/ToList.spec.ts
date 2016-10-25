@@ -17,4 +17,13 @@ describe('ToList', () => {
     obj.getMembers().length.should.eql(1);
     obj.getMembers()[0].should.eql(list);
   });
+
+  it('sets the owner of the property member', () => {
+    const obj = new TestObject();
+    const source = <boolean[]>[];
+    const list = source.toList(obj);
+
+    should.exist(list.owner);
+    list.owner.should.eql(obj);
+  });
 });

@@ -172,4 +172,17 @@ describe('ReactiveObject', () => {
       obj.items.push(1);
     });
   });
+
+  describe('thrownErrors', () => {
+    it('emits thrown errors from registered members');
+  });
+
+  describe('value', () => {
+    it('returns itself', () => {
+      const obj = new BasicReactiveObject();
+
+      should.exist(obj.value);
+      obj.value.should.eql(obj);
+    });
+  });
 });
