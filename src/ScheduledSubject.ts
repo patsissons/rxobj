@@ -14,7 +14,7 @@ export class ScheduledSubject<TValue> extends AnonymousSubject<TValue> {
     if (defaultObserverOrNext != null) {
       this.defaultObserverSub = this
         .observeOnScheduler()
-        .subscribe(this.getSubscriber(this.defaultObserverOrNext));
+        .subscribe(new Subscriber(this.defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next));
     }
   }
 
@@ -26,16 +26,6 @@ export class ScheduledSubject<TValue> extends AnonymousSubject<TValue> {
     }
 
     return obs;
-  }
-
-  private getSubscriber(observerOrNext?: PartialObserver<TValue> | ((value: TValue) => void)) {
-    const subscriber = new Subscriber(observerOrNext);
-
-    if (subscriber.error == null) {
-      subscriber.error = ReactiveApp.defaultErrorHandler.next;
-    }
-
-    return subscriber;
   }
 
   unsubscribe() {
@@ -63,7 +53,7 @@ export class ScheduledSubject<TValue> extends AnonymousSubject<TValue> {
 
           this.defaultObserverSub = this
             .observeOnScheduler()
-            .subscribe(this.getSubscriber(this.defaultObserverOrNext));
+            .subscribe(new Subscriber(this.defaultObserverOrNext, ReactiveApp.defaultErrorHandler.next));
         }
       })
     );
