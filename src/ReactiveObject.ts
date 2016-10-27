@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 
 import { ReactiveState, AnyReactiveState, AnyReactiveEvent } from './ReactiveState';
@@ -92,7 +92,7 @@ export class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject
     return this.objectMembers.slice();
   }
 
-  delayChangeNotifications() {
+  delayChangeNotifications(): Subscription {
     // it's possible to unsub from this delay before any notifications
     // are emitted, which means we need to explicitly check for member
     // name resolution.
