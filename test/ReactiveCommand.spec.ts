@@ -313,4 +313,37 @@ describe('ReactiveCommand', () => {
       cmd.execute(param).subscribe(undefined, undefined, done);
     });
   });
+
+  describe('delayChangeNotifications', () => {
+    it.only('de-duplicates consecutive identical values', () => {
+      const cmd = new ReactiveCommand(testOwner, (x: number) => {
+        return Observable.of(x);
+      });
+      const subject = new BehaviorSubject<number[]>(null);
+      const end = new Subject();
+
+      cmd.changed
+        .map(x => x.value.result)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => cmd.delayChangeNotifications(),
+        x => {
+          cmd.executeNow(1);
+          cmd.executeNow(1);
+          cmd.executeNow(2);
+          cmd.executeNow(2);
+          cmd.executeNow(2);
+          cmd.executeNow(1);
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      subject.value.should.eql([ 1, 2, 1 ]);
+    });
+  });
 });
