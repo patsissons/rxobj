@@ -7,7 +7,7 @@ import { ReactiveEvent } from './ReactiveEvent';
 export type AnyReactiveState = ReactiveState<any, any, any>;
 export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
 
-function dedup<T extends AnyReactiveEvent>(batch: T[] = []) {
+function dedup<T extends AnyReactiveEvent>(batch: T[]) {
   if (batch.length <= 1) {
     return batch;
   }
