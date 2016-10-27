@@ -1,6 +1,6 @@
 import { should, subscribeNotCalledError } from './setup';
 
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ReactiveProperty, ReactivePropertyEventValue } from '../src/ReactiveProperty';
 
 describe('ReactiveProperty', () => {
@@ -312,6 +312,35 @@ describe('ReactiveProperty', () => {
 
       subject.value.oldValue.should.eql(2);
       subject.value.newValue.should.eql(3);
+    });
+
+    it('de-duplicates consecutive identical values', () => {
+      const prop = new ReactiveProperty(testOwner, 0);
+      const subject = new BehaviorSubject<number[]>(null);
+      const end = new Subject();
+
+      prop.changed
+        .map(x => x.value.newValue)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => prop.delayChangeNotifications(),
+        x => {
+          prop.value = 1;
+          prop.value = 1;
+          prop.value = 2;
+          prop.value = 2;
+          prop.value = 2;
+          prop.value = 1;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      subject.value.should.eql([ 1, 2, 1 ]);
     });
 
     it('handles multiple calls', (done) => {

@@ -46,5 +46,10 @@ describe('ReactiveApp', () => {
     it('should be the queue scheduler for a unit test context', () => {
       ReactiveApp.mainScheduler.should.equal(Scheduler.queue);
     });
+
+    it('is the asap scheduler outside of a unit test context', () => {
+      sandbox.stub(ReactiveApp, 'isUnitTestRunner', false);
+      (<any>ReactiveApp).createMainScheduler().should.equal(Scheduler.asap);
+    });
   });
 });

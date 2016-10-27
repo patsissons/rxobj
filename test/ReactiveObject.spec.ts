@@ -292,5 +292,55 @@ describe('ReactiveObject', () => {
       should.exist(subject.value);
       subject.value.should.eql([ 'prop1' ]);
     });
+
+    it('de-duplicates a single event with an initial event before the delay', () => {
+      const obj = new TestObject();
+      const subject = new BehaviorSubject<string[]>(null);
+      const end = new Subject();
+
+      obj.prop1.value = 123;
+
+      obj.changed
+        .map(x => x.value.name)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => obj.delayChangeNotifications(),
+        x => {
+          obj.prop1.value = 1;
+
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      should.exist(subject.value);
+      subject.value.should.eql([ 'prop1' ]);
+    });
+
+    it('de-duplicates no events', () => {
+      const obj = new TestObject();
+      const subject = new BehaviorSubject<string[]>(null);
+      const end = new Subject();
+
+      obj.changed
+        .map(x => x.value.name)
+        .takeUntil(end)
+        .toArray()
+        .subscribe(subject);
+
+      Observable.using(
+        () => obj.delayChangeNotifications(),
+        x => {
+          x.unsubscribe();
+        }
+      ).subscribe();
+
+      end.next();
+      should.exist(subject.value);
+      subject.value.should.eql([]);
+    });
   });
 });
