@@ -315,7 +315,7 @@ describe('ReactiveCommand', () => {
   });
 
   describe('delayChangeNotifications', () => {
-    it.only('de-duplicates consecutive identical values', () => {
+    it.only('de-duplicates consecutive identical values', (done) => {
       const cmd = new ReactiveCommand(testOwner, (x: number) => {
         return Observable.of(x);
       });
@@ -339,11 +339,11 @@ describe('ReactiveCommand', () => {
           cmd.executeNow(1);
 
           x.unsubscribe();
-        }
-      ).subscribe();
 
-      end.next();
-      subject.value.should.eql([ 1, 2, 1 ]);
+          end.next();
+          subject.value.should.eql([ 1, 2, 1 ]);
+        }
+      ).subscribe(done);
     });
   });
 });

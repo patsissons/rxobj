@@ -34,6 +34,8 @@ function dedup<T extends AnyReactiveEvent>(batch: T[]) {
     // dedup based on the member value
     batch
       .forEach((x, i) => {
+        console.log(`x = ${ x }, last = ${ last || 'NULL' }, ${ x !== last }`);
+
         if (i === 0) {
           result.push(x);
         }
