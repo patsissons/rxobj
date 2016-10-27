@@ -10,6 +10,7 @@ import { QueueScheduler } from 'rxjs/scheduler/QueueScheduler';
 
 // this is a really hacky way of detecting if we're running in the
 // context of a unit test runner
+// istanbul ignore next
 function isInTestRunner(g: any = global, w?: any) {
   if (w == null) {
     w = g.window;
