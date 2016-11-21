@@ -1,0 +1,12 @@
+{
+  "_note": "this file is required to allow vscode debug gulp tasks",
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

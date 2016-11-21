@@ -5,8 +5,10 @@ import { Subscriber, Scheduler } from 'rxjs';
 import { ReactiveApp } from '../src/ReactiveApp';
 
 describe('ReactiveApp', () => {
-  it('isUnitTestRunner should be true', () => {
-    ReactiveApp.isUnitTestRunner.should.be.true;
+  describe('isUnitTestRunner', () => {
+    it('should be true', () => {
+      ReactiveApp.isUnitTestRunner.value.should.be.true;
+    });
   });
 
   describe('defaultErrorHandler', () => {
@@ -44,7 +46,7 @@ describe('ReactiveApp', () => {
     });
 
     it('should be the queue scheduler for a unit test context', () => {
-      ReactiveApp.mainScheduler.should.equal(Scheduler.queue);
+      ReactiveApp.mainScheduler.value.should.equal(Scheduler.queue);
     });
 
     it('is the asap scheduler outside of a unit test context', () => {

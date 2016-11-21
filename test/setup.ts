@@ -18,4 +18,4 @@ export const subscribeNotCalledError = new Error('Subscribe not called');
 
 export const should = chai.should();
 
-export let sandbox: Sinon.SinonSandbox;
+export let sandbox: sinon.SinonSandbox;

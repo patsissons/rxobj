@@ -1,5 +1,5 @@
 .vscode/
 build/
 dist/
-typings/
+node_modules/
 package.json

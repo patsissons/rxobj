@@ -22,9 +22,12 @@ describe('Sanity Tests', () => {
     it('can create stubs', () => {
       const stub = sandbox.stub();
 
+      should.exist(stub);
+      should.exist(stub.callCount);
+
       stub();
 
-      should.equal(1, stub.callCount);
+      stub.callCount.should.eql(1);
     });
   });
 

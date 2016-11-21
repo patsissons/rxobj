@@ -34,7 +34,7 @@ function dedup<T extends AnyReactiveEvent>(batch: T[]) {
     // dedup based on the member value
     batch
       .forEach((x, i) => {
-        console.log(`x = ${ x }, last = ${ last || 'NULL' }, ${ x !== last }`);
+        // console.log(`x = ${ x }, last = ${ last || 'NULL' }, ${ x !== last }`);
 
         if (i === 0) {
           result.push(x);
@@ -101,7 +101,7 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
 
   protected notifyPropertyChanging(changing: () => ReactiveEvent<this, TEventValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
-      return;
+      return null;
     }
 
     return this.notifyObservable(changing, this.changingSubject);
@@ -109,7 +109,7 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
 
   protected notifyPropertyChanged(changed: () => ReactiveEvent<this, TEventValue>) {
     if (this.areChangeNotificationsEnabled() === false) {
-      return;
+      return null;
     }
 
     return this.notifyObservable(changed, this.changedSubject, x => { this.lastEvent = x; });
@@ -128,6 +128,8 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
       return event.value;
     } catch (err) {
       this.thrownErrorsHandler.next(err);
+
+      return null;
     }
   }
 

@@ -1,53 +1,20 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "sourceMap": true,
+    "baseUrl": ".",
     "module": "commonjs",
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": false,
+    "noImplicitUseStrict": true,
+    "paths": {
+      "*": [ "src/types/*" ]
+    },
+    "preserveConstEnums": true,
+    "strictNullChecks": false,
+    "target": "es5"
   },
-  "filesGlob": [
-    "./typings/index.d.ts",
-    "!./src/typings/**/*",
-    "./src/**/*.ts",
-    "./test/**/*.ts"
-  ],
   "files": [
-    "./typings/index.d.ts",
-    "./src/augmentations/add/InvokeCommand.ts",
-    "./src/augmentations/add/PausableBuffer.ts",
-    "./src/augmentations/add/ToList.ts",
-    "./src/augmentations/add/ToProperty.ts",
-    "./src/augmentations/add/WhenAny.ts",
-    "./src/augmentations/operators/InvokeCommand.ts",
-    "./src/augmentations/operators/PausableBuffer.ts",
-    "./src/augmentations/operators/ToList.ts",
-    "./src/augmentations/operators/ToProperty.ts",
-    "./src/augmentations/operators/WhenAny.ts",
-    "./src/ReactiveApp.ts",
-    "./src/ReactiveCommand.ts",
-    "./src/ReactiveEvent.ts",
-    "./src/ReactiveList.ts",
-    "./src/ReactiveObject.ts",
-    "./src/ReactiveProperty.ts",
-    "./src/ReactiveState.ts",
-    "./src/rxobj.ts",
-    "./src/ScheduledSubject.ts",
-    "./test/augmentations/InvokeCommand.spec.ts",
-    "./test/augmentations/PausableBuffer.spec.ts",
-    "./test/augmentations/ToList.spec.ts",
-    "./test/augmentations/ToProperty.spec.ts",
-    "./test/augmentations/WhenAny.spec.ts",
-    "./test/examples/Search.spec.ts",
-    "./test/examples/Search.ts",
-    "./test/ReactiveApp.spec.ts",
-    "./test/ReactiveCommand.spec.ts",
-    "./test/ReactiveEvent.spec.ts",
-    "./test/ReactiveList.spec.ts",
-    "./test/ReactiveObject.spec.ts",
-    "./test/ReactiveProperty.spec.ts",
-    "./test/Sanity.spec.ts",
-    "./test/ScheduledSubject.spec.ts",
-    "./test/setup.ts"
+    "src/rxobj.ts"
   ]
 }

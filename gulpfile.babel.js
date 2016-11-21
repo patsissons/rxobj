@@ -1,25 +1,30 @@
+import { ForkCheckerPlugin } from 'awesome-typescript-loader';
+import clone from 'clone';
+import del from 'del';
 import gulp from 'gulp';
-import util from 'gulp-util';
-import typings from 'gulp-typings';
-import eslint from 'gulp-eslint';
-import tslint from 'gulp-tslint';
-import mocha from 'gulp-mocha';
-import typescript from 'gulp-typescript';
-import sourcemaps from 'gulp-sourcemaps';
-import uglify from 'gulp-uglify';
-import spawnMocha from 'gulp-spawn-mocha';
-import remapIstanbul from 'remap-istanbul/lib/gulpRemapIstanbul';
 import coveralls from 'gulp-coveralls';
+import eslint from 'gulp-eslint';
+import istanbul from 'gulp-istanbul';
+import mocha from 'gulp-mocha';
+import plumber from 'gulp-plumber';
+import tslint from 'gulp-tslint';
+import util from 'gulp-util';
 import minimist from 'minimist';
 import path from 'path';
-import del from 'del';
-import tsconfigGlob from 'tsconfig-glob';
+import remapIstanbul from 'remap-istanbul/lib/gulpRemapIstanbul';
 import rseq from 'run-sequence';
+import through from 'through';
+import webpack from 'webpack';
+import webpackStream from 'webpack-stream';
+
+import * as webpackConfig from './webpack.config';
+import * as webpackTestConfig from './test/webpack.config';
 
 const options = {
   string: [
-    'libpath',
+    'buildpath',
     'distpath',
+    'covpath',
     'reporter',
   ],
   boolean: [
@@ -28,15 +33,17 @@ const options = {
     'force',
   ],
   alias: {
-    libpath: [ 'l', 'lib' ],
+    buildpath: [ 'b', 'build' ],
     distpath: [ 'd', 'dist' ],
+    covpath: [ 'c', 'cov' ],
     reporter: [ 'r' ],
     verbose: [ 'v' ],
     quiet: [ 'q' ],
   },
   default: {
-    libpath: path.resolve(__dirname, 'lib'),
+    buildpath: path.resolve(__dirname, 'build'),
     distpath: path.resolve(__dirname, 'dist'),
+    covpath: path.resolve(__dirname, 'coverage'),
     reporter: 'spec',
     verbose: false,
     quiet: false,
@@ -46,27 +53,24 @@ const options = {
 
 const args = minimist(process.argv, options);
 
-const files = {
-  bundle: 'rxobj.js',
-  stats: 'stats.json',
-  tsconfig: 'tsconfig.json',
-  typings: 'typings.json',
-  webpack: 'webpack.config.js',
-};
-
 const config = {
   verbose: args.verbose,
   quiet: args.quiet,
   force: args.force,
   reporter: args.reporter,
+  files: {
+    bundle: 'rxobj.js',
+    testBundle: 'rxobj.spec.js',
+    stats: 'stats.json',
+    tsconfig: 'tsconfig.json',
+    coverage: 'coverage-final.json',
+  },
   paths: {
-    typings: path.resolve(__dirname, 'typings'),
     src: path.resolve(__dirname, 'src'),
     test: path.resolve(__dirname, 'test'),
-    build: path.resolve(__dirname, 'build'),
-    lib: args.libpath,
+    build: args.buildpath,
     dist: args.distpath,
-    coverage: path.resolve(__dirname, 'coverage'),
+    coverage: args.covpath,
   },
 };
 
@@ -85,12 +89,14 @@ if (config.verbose) {
 // Default build task
 gulp.task('default', [ 'help' ]);
 // Default test task
-gulp.task('test', [ 'mocha' ]);
+gulp.task('test', (done) => {
+  rseq('webpack:test', 'mocha', done);
+});
 
 // npm test task
 gulp.task('npm:test', [ 'dist' ]);
 // npm start task
-gulp.task('npm:start', [ 'default' ]);
+gulp.task('npm:start', [ 'watch' ]);
 
 gulp.task('config', () => {
   util.log('Gulp Config:', JSON.stringify(config, null, 2));
@@ -102,12 +108,12 @@ gulp.task('help', () => {
 *** rxobj Gulp Help ***
 
 Command Line Overrides:
-  ${ util.colors.cyan('--verbose, -v') }                 : print webpack module details and stats after bundling (${ util.colors.magenta(config.verbose) })
-  ${ util.colors.cyan('--quiet, -q') }                   : do not print any extra build details (${ util.colors.magenta(config.quiet) })
-  ${ util.colors.cyan('--libpath, --lib, -l') }   ${ util.colors.yellow('<path>') } : override ${ util.colors.yellow('lib') } directory (${ util.colors.magenta(config.paths.lib) })
-  ${ util.colors.cyan('--distpath, --dist, -d') } ${ util.colors.yellow('<path>') } : override ${ util.colors.yellow('dist') } directory (${ util.colors.magenta(config.paths.dist) })
-  ${ util.colors.cyan('--reporter, -r') }         ${ util.colors.yellow('<name>') } : mocha test reporter (${ util.colors.magenta(config.reporter) })
-                                  ${ [ 'spec', 'list', 'progress', 'dot', 'min' ].map((x) => util.colors.magenta(x)).join(', ') }
+  ${ util.colors.cyan('--verbose, -v') }                   : print more detail
+  ${ util.colors.cyan('--quiet, -q') }                     : do not print any extra build details (${ util.colors.magenta(config.quiet) })
+  ${ util.colors.cyan('--buildpath, --build, -b') } ${ util.colors.yellow('<path>') } : override ${ util.colors.yellow('build') } directory (${ util.colors.magenta(config.paths.build) })
+  ${ util.colors.cyan('--distpath, --dist, -d') }   ${ util.colors.yellow('<path>') } : override ${ util.colors.yellow('dist') } directory (${ util.colors.magenta(config.paths.dist) })
+  ${ util.colors.cyan('--covpath, --cov, -c') }     ${ util.colors.yellow('<path>') } : override ${ util.colors.yellow('coverage') } directory (${ util.colors.magenta(config.paths.coverage) })
+  ${ util.colors.cyan('--reporter, -r') }           ${ util.colors.yellow('<name>') } : mocha test reporter (${ util.colors.magenta(config.reporter) }) [ ${ [ 'spec', 'list', 'progress', 'dot', 'min' ].map((x) => util.colors.magenta(x)).join(', ') } ]
 
 Tasks:
   ${ util.colors.cyan('gulp help') } will print this help text
@@ -119,12 +125,8 @@ Tasks:
   ${ util.colors.cyan('gulp npm:start') } called by ${ util.colors.cyan('npm start') }
   ${ util.colors.cyan('gulp npm:test') } called by ${ util.colors.cyan('npm test') }
 
-  ${ util.colors.cyan('gulp clean') } will delete all files in ${ util.colors.magenta(config.paths.typings) }, ${ util.colors.magenta(config.paths.build) }, ${ util.colors.magenta(config.paths.lib) }, ${ util.colors.magenta(config.paths.dist) }
-       ${ [ 'typings', 'build', 'lib', 'dist', 'all' ].map((x) => util.colors.cyan(`clean:${ x }`)).join(', ') }
-
-  ${ util.colors.cyan('gulp typings') } will install typescript definition files via the typings utility
-
-  ${ util.colors.cyan('gulp tsconfig') } will expand ${ util.colors.yellow('filesGlob') } in ${ util.colors.magenta(files.tsconfig) }
+  ${ util.colors.cyan('gulp clean') } will delete all files in ${ util.colors.magenta(config.paths.build) }, ${ util.colors.magenta(config.paths.lib) }, ${ util.colors.magenta(config.paths.dist) }, ${ util.colors.magenta(config.paths.coverage) }
+       ${ [ 'build', 'dist', 'coverage', 'all' ].map((x) => util.colors.cyan(`clean:${ x }`)).join(', ') }
 
   ${ util.colors.cyan('gulp lint') } will lint the source files with ${ util.colors.yellow('eslint') } and ${ util.colors.yellow('tslint') }
        ${ [ 'es', 'ts', 'all' ].map((x) => util.colors.cyan(`lint:${ x }`)).join(', ') }
@@ -134,23 +136,14 @@ Tasks:
   ${ util.colors.cyan('gulp watch') } will watch for changes in ${ util.colors.magenta(config.paths.src) } and ${ util.colors.magenta(config.paths.test) } and run mocha (alias for ${ util.colors.cyan('watch:mocha') })
   ${ util.colors.cyan('gulp watch:lint') } will watch for changes in ${ util.colors.magenta(config.paths.src) } and ${ util.colors.magenta(config.paths.test) } and run the linters
 
-  ${ util.colors.cyan('gulp typescript') } will compile typescript files to ${ util.colors.magenta(config.paths.build) }
-       ${ [ 'typings', 'lib', 'lib:ES5', 'lib:ES6', 'all' ].map((x) => util.colors.cyan(`typescript:${ x }`)).join(', ') }
+  ${ util.colors.cyan('gulp webpack') } will compile typescript files to ${ util.colors.magenta(config.paths.build) }
 `);
   /* eslint-enable max-len */
 });
 
 gulp.task('clean', [ 'clean:all' ]);
 
-gulp.task('clean:all', [ 'clean:typings', 'clean:build', 'clean:lib', 'clean:dist', 'clean:coverage' ]);
-
-gulp.task('clean:typings', () => {
-  log('Cleaning', util.colors.magenta(config.paths.typings));
-
-  del.sync([
-    path.join(config.paths.typings, '**', '*'),
-  ], { force: true });
-});
+gulp.task('clean:all', [ 'clean:build', 'clean:dist', 'clean:coverage', 'clean:gulp' ]);
 
 gulp.task('clean:build', () => {
   log('Cleaning', util.colors.magenta(config.paths.build));
@@ -158,21 +151,6 @@ gulp.task('clean:build', () => {
   del.sync([
     config.paths.build,
   ], { force: true });
-});
-
-gulp.task('clean:lib', () => {
-  // numeric variable names make sense here
-  /* eslint-disable id-match*/
-  const es5 = path.resolve(config.paths.lib, 'ES5');
-  const es6 = path.resolve(config.paths.lib, 'ES6');
-
-  log('Cleaning', util.colors.magenta(es5), 'and', util.colors.magenta(es6));
-
-  del.sync([
-    es5,
-    es6,
-  ], { force: true });
-  /* eslint-enable id-match*/
 });
 
 gulp.task('clean:dist', () => {
@@ -191,136 +169,65 @@ gulp.task('clean:coverage', () => {
   ], { force: true });
 });
 
-gulp.task('typings', () => {
-  log('Installing typings...');
+gulp.task('clean:gulp', () => {
+  const target = path.resolve(__dirname, 'gulpfile.js');
 
-  return gulp
-    .src(path.resolve(__dirname, files.typings))
-    .pipe(typings());
+  log('Cleaning', util.colors.magenta(target));
+
+  del.sync([
+    target,
+  ], { force: true });
 });
 
-gulp.task('tsconfig', [ 'typings' ], () => {
-  log('Globbing', util.colors.magenta(path.resolve(__dirname, files.tsconfig)));
+gulp.task('webpack', [ 'webpack:debug' ]);
+gulp.task('webpack:all', [ 'webpack:debug', 'webpack:release', 'webpack:test' ]);
 
-  return tsconfigGlob({ indent: 2 });
-});
+gulp.task('webpack:debug', () => {
+  log('building', util.colors.yellow('debug'), 'bundle...');
 
-gulp.task('typescript', [ 'typescript:all' ]);
+  const cfg = clone(webpackConfig);
 
-gulp.task('typescript:all', [ 'typescript:lib', 'typescript:bundle', 'typescript:typings' ]);
-
-gulp.task('typescript:lib', [ 'typescript:lib:ES5', 'typescript:lib:ES6' ]);
-
-gulp.task('typescript:lib:ES5', () => {
-  log('Compiling to ES5...');
-
-  const tsProject = typescript.createProject(files.tsconfig, {
-    target: 'ES5',
-  });
-
-  const outDir = path.resolve(config.paths.build, 'lib', 'ES5');
+  cfg.plugins[0].definitions.DEBUG = true;
 
   return gulp
-    .src([
-      path.resolve(config.paths.typings, 'index.d.ts'),
-      path.resolve(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ], { base: path.resolve(config.paths.src) })
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
-    .pipe(gulp.dest(outDir));
+    .src([ path.resolve(config.paths.src, 'rxobj.ts') ])
+    .pipe(webpackStream(cfg))
+    .pipe(gulp.dest(path.resolve(config.paths.build, 'debug')));
 });
 
-gulp.task('typescript:lib:ES6', () => {
-  log('Compiling to ES6...');
+gulp.task('webpack:release', () => {
+  log('building', util.colors.yellow('release'), 'bundle...');
 
-  const tsProject = typescript.createProject(files.tsconfig, {
-    target: 'ES6',
-    module: 'es2015',
-  });
+  const cfg = clone(webpackConfig);
 
-  const outDir = path.resolve(config.paths.build, 'lib', 'ES6');
+  cfg.externals = {
+    'rxjs': true,
+  };
+
+  cfg.plugins[0].definitions.RELEASE = true;
+
+  cfg.plugins.push(
+    new ForkCheckerPlugin(),
+    new webpack.optimize.OccurenceOrderPlugin(true),
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.UglifyJsPlugin()
+  );
 
   return gulp
-    .src([
-      // we need to punt out es6-shim definitions, so we have to kind of
-      // hack the globbing
-      path.resolve(config.paths.typings, '**', 'index.d.ts'),
-      `!${ path.resolve(config.paths.typings, 'index.d.ts') }`,
-      `!${ path.resolve(config.paths.typings, '**', 'es6-shim', 'index.d.ts') }`,
-      path.resolve(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ], { base: path.resolve(config.paths.src) })
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
-    .pipe(gulp.dest(outDir));
+    .src([ path.resolve(config.paths.src, 'rxobj.ts') ])
+    .pipe(webpackStream(cfg))
+    .pipe(gulp.dest(path.resolve(config.paths.build, 'release')));
 });
 
-gulp.task('typescript:bundle', () => {
-  log('Compiling to js bundle...');
+gulp.task('webpack:test', () => {
+  log('building', util.colors.yellow('test'), 'bundle...');
 
-  const tsProject = typescript.createProject(files.tsconfig, {
-    module: 'system',
-    outFile: files.bundle,
-  });
-
-  const outDir = path.resolve(config.paths.build, 'bundle');
+  const cfg = clone(webpackTestConfig);
 
   return gulp
-    .src([
-      path.resolve(config.paths.typings, 'index.d.ts'),
-      path.resolve(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-    ], { base: path.resolve(config.paths.src) })
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(uglify())
-    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve(config.paths.src) }))
-    .pipe(gulp.dest(outDir));
-});
-
-gulp.task('typescript:typings', () => {
-  log('Compiling typescript typings...');
-
-  const tsProject = typescript.createProject(files.tsconfig, {
-    target: 'ES5',
-    module: 'system',
-    declaration: true,
-    outFile: files.bundle,
-  });
-
-  return gulp
-    .src([
-      path.resolve(config.paths.typings, 'index.d.ts'),
-      path.resolve(config.paths.src, 'rxobj.ts'),
-    ])
-    .pipe(tsProject())
-    .dts
-    .pipe(gulp.dest(path.resolve(config.paths.build, 'typings')));
-});
-
-gulp.task('typescript:test', () => {
-  log('Compiling typescript tests...');
-
-  const tsProject = typescript.createProject(files.tsconfig, {
-    target: 'ES5',
-  });
-
-  const outDir = path.resolve(config.paths.build);
-
-  return gulp
-    .src([
-      path.resolve(config.paths.typings, 'index.d.ts'),
-      path.resolve(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-      path.resolve(config.paths.test, '**', '*.ts'),
-    ], { base: '.' })
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write('.', { sourceRoot: path.resolve('.') }))
-    .pipe(gulp.dest(outDir));
+    .src([ path.resolve(config.paths.test, 'rxobj.spec.ts') ])
+    .pipe(webpackStream(cfg))
+    .pipe(gulp.dest(path.resolve(config.paths.build, 'test')));
 });
 
 gulp.task('lint', [ 'lint:all' ]);
@@ -347,7 +254,6 @@ gulp.task('lint:ts', () => {
   return gulp
     .src([
       path.resolve(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
       path.resolve(config.paths.test, '**', '*.ts'),
     ])
     .pipe(tslint({
@@ -359,57 +265,57 @@ gulp.task('lint:ts', () => {
     }));
 });
 
-gulp.task('mocha', (done) => {
-  rseq('tsconfig', 'typescript:test', 'mocha:run', done);
-});
+gulp.task('mocha', [ 'mocha:coverage' ]);
 
-gulp.task('mocha:run', () => {
-  log('Testing with mocha...');
+gulp.task('mocha:test', () => {
+  log('Running tests with mocha...');
 
   const reporter = config.quiet ? 'dot' : config.reporter;
 
   return gulp
     .src([
-      path.resolve(config.paths.build, 'test', '**', '*.spec.js'),
+      path.resolve(config.paths.build, 'test', config.files.testBundle),
     ], { read: false })
     .pipe(mocha({ reporter }));
 });
 
 gulp.task('mocha:coverage', () => {
-  log('Covering tests with mocha and istanbul...');
+  log('Running and covering tests with mocha and istanbul...');
 
   const reporter = config.quiet ? 'dot' : config.reporter;
 
   return gulp
     .src([
-      path.resolve(config.paths.build, 'test', '**', '*.spec.js'),
+      path.resolve(config.paths.build, 'test', config.files.testBundle),
     ], { read: false })
-    .pipe(spawnMocha({
-      recursive: true,
-      istanbul: true,
-      reporter,
-    }));
-});
+    .pipe(mocha({ reporter }))
+    .pipe(istanbul.writeReports({
+      coverageVariable: webpackTestConfig.coverageVariable,
+      reporters: [ 'lcov', 'json', 'html' ],
+    }))
+    .on('end', () => {
+      log('Remapping istanbul coverage results to typescript files...');
 
-gulp.task('istanbul:remap', () => {
-  log('Remapping istanbul coverage results to typescript files...');
-  return gulp
-    .src([
-      path.resolve(config.paths.coverage, 'coverage.json'),
-    ])
-    .pipe(remapIstanbul({
-      reports: {
-        'json': path.resolve(config.paths.coverage, 'coverage.json'),
-        'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
-        'html': path.resolve(config.paths.coverage, 'lcov-report'),
-      },
-      fail: true,
-    }));
+      gulp
+        .src([
+          path.resolve(config.paths.coverage, config.files.coverage),
+        ])
+        .pipe(remapIstanbul({
+          reports: {
+            'json': path.resolve(config.paths.coverage, config.files.coverage),
+            'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
+            'html': path.resolve(config.paths.coverage, 'lcov-report'),
+            'text-summary': null,
+          },
+          fail: true,
+        }));
+    });
 });
 
 gulp.task('coveralls', [ 'coveralls:upload' ]);
 
 gulp.task('coveralls:upload', (done) => {
+  // eslint-disable-next-line no-process-env
   if (process.env.CI || config.force === true) {
     log('Uploading coverage results to coveralls...');
 
@@ -425,57 +331,91 @@ gulp.task('coveralls:upload', (done) => {
 
 gulp.task('watch', [ 'watch:mocha' ]);
 
-gulp.task('watch:lint', () => {
-  rseq('lint', () => null);
+gulp.task('watch:lint:run', (done) => {
+  rseq('lint', () => {
+    log('Watching for changes...');
 
-  log('Watching for changes...');
+    done();
+  });
+});
+
+// supply done param so that the task doesn't 'finish'
+// eslint-disable-next-line no-unused-vars
+gulp.task('watch:lint', [ 'watch:lint:run' ], (done) => {
+  log('watching files and linting...');
 
   return gulp
     .watch([
       path.join(config.paths.src, '**', '*.ts'),
       path.join(config.paths.test, '**', '*.ts'),
       path.join(__dirname, '*.js'),
-    ], () => rseq('lint', () => null));
+    ], [ 'watch:lint:run' ]);
 });
 
-gulp.task('watch:test', () => {
-  rseq('tsconfig', 'typescript:test', () => null);
+// supply done param so that the task doesn't 'finish'
+// eslint-disable-next-line no-unused-vars
+gulp.task('watch:mocha', [ 'clean:build' ], (done) => {
+  log('watching', util.colors.yellow('test'), 'build...');
 
-  log('Watching for changes...');
+  const reporter = config.quiet ? 'dot' : config.reporter;
 
-  return gulp
-    .watch([
-      path.join(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-      path.join(config.paths.test, '**', '*.ts'),
-    ], () => {
-      rseq('typescript:test', () => null);
-    });
-});
+  const cfg = clone(webpackTestConfig);
 
-gulp.task('watch:mocha', () => {
-  rseq('tsconfig', 'typescript:test', 'mocha:run', () => null);
-
-  log('Watching for changes...');
+  cfg.watch = true;
 
   return gulp
-    .watch([
-      path.join(config.paths.src, '**', '*.ts'),
-      `!${ path.resolve(config.paths.src, '**', '*.d.ts') }`,
-      path.join(config.paths.test, '**', '*.ts'),
-    ], () => {
-      rseq('typescript:test', 'mocha:run', () => null);
-    });
+    .src([ path.resolve(config.paths.test, 'rxobj.spec.ts') ])
+    .pipe(plumber())
+    .pipe(webpackStream(cfg))
+    .pipe(gulp.dest(path.resolve(config.paths.build, 'test')))
+    .pipe(through((file) => {
+      log('Testing', file.path, '...');
+
+      // reset the coverage var so we get fresh coverage results
+      global[webpackTestConfig.coverageVariable] = null;
+
+      gulp
+        .src(file.path, { read: false })
+        .pipe(plumber())
+        .pipe(mocha({ reporter }))
+        .pipe(istanbul.writeReports({
+          coverageVariable: webpackTestConfig.coverageVariable,
+          reporters: [ 'lcov', 'json', 'html' ],
+        }))
+        .on('end', () => {
+          log('Remapping istanbul coverage results to typescript files...');
+
+          gulp
+            .src([
+              path.resolve(config.paths.coverage, config.files.coverage),
+            ])
+            .pipe(remapIstanbul({
+              reports: {
+                'json': path.resolve(config.paths.coverage, config.files.coverage),
+                'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
+                'html': path.resolve(config.paths.coverage, 'lcov-report'),
+                'text-summary': null,
+              },
+              fail: true,
+            }));
+        });
+    }));
 });
 
 gulp.task('dist', [ 'clean' ], (done) => {
-  rseq('tsconfig', 'typescript:test', 'mocha:coverage', 'istanbul:remap', 'lint', 'typescript', 'dist:deploy', done);
+  rseq(
+    'lint',
+    'webpack:test',
+    'mocha:coverage',
+    'istanbul:remap',
+    'webpack:release',
+    'dist:deploy',
+    done
+  );
 });
 
-gulp.task('dist:deploy', [ 'dist:deploy:bundle', 'dist:deploy:typings', 'dist:deploy:lib' ]);
-
-gulp.task('dist:deploy:bundle', () => {
-  const target = path.resolve(config.paths.build, 'bundle', `${ files.bundle }*`);
+gulp.task('dist:deploy', () => {
+  const target = path.resolve(config.paths.build, 'release');
 
   log('Deploying', util.colors.magenta(target), 'to', util.colors.magenta(config.paths.dist));
 
@@ -484,28 +424,4 @@ gulp.task('dist:deploy:bundle', () => {
       target,
     ])
     .pipe(gulp.dest(config.paths.dist));
-});
-
-gulp.task('dist:deploy:typings', () => {
-  const target = path.resolve(config.paths.build, 'typings', util.replaceExtension(files.bundle, '.d.ts'));
-
-  log('Deploying', util.colors.magenta(target), 'to', util.colors.magenta(config.paths.dist));
-
-  gulp
-    .src([
-      target,
-    ])
-    .pipe(gulp.dest(config.paths.dist));
-});
-
-gulp.task('dist:deploy:lib', () => {
-  const target = path.resolve(config.paths.build, 'lib');
-
-  log('Deploying', util.colors.magenta(target), 'to', util.colors.magenta(target));
-
-  gulp
-    .src([
-      path.resolve(target, '**', '*'),
-    ])
-    .pipe(gulp.dest(path.resolve(config.paths.dist, 'lib')));
 });

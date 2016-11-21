@@ -3,7 +3,7 @@ import { invokeCommand, InvokeCommandSignature } from '../operators/InvokeComman
 
 Observable.prototype.invokeCommand = invokeCommand;
 
-declare module '~rxjs/Observable' {
+declare module 'rxjs/Observable' {
   interface Observable<T> {
     invokeCommand: InvokeCommandSignature<T>;
   }

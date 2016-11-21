@@ -22,12 +22,52 @@
       "outDir": null
     },
     {
+      "name": "Istanbul",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/istanbul/lib/cli.js",
+      "stopOnEntry": false,
+      "args": ["cover", "--report", "html", "${workspaceRoot}/node_modules/mocha/bin/_mocha", "--", "-R", "spec", "${workspaceRoot}/build/test/**/*.spec.js"],
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": null,
+      "runtimeExecutable": null,
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "sourceMaps": false,
+      "outDir": null
+    },
+    {
       "name": "Gulp",
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/gulp/bin/gulp.js",
       "stopOnEntry": false,
-      "args": ["istanbul:remap"],
+      "args": ["mocha:coverage"],
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": null,
+      "runtimeExecutable": null,
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "sourceMaps": false,
+      "outDir": null
+    },
+    {
+      "name": "Webpack",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/webpack/bin/webpack.js",
+      "stopOnEntry": false,
+      "args": ["--config", "test/webpack.config.js"],
       "cwd": "${workspaceRoot}",
       "preLaunchTask": null,
       "runtimeExecutable": null,
