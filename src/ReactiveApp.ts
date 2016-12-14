@@ -1,13 +1,7 @@
-import { Subscriber, Scheduler } from 'rxjs';
-// we need to import these to satify the compiler
-import { AsapScheduler } from 'rxjs/scheduler/AsapScheduler';
-import { QueueScheduler } from 'rxjs/scheduler/QueueScheduler';
+import { Subscriber, Scheduler as Schedulers } from 'rxjs';
+import { Scheduler } from 'rxjs/Scheduler';
 
 import { Lazy } from './Lazy';
-
-// null scheduler is the old immediate scheduler
-// queue scheduler is the old currentThread scheduler
-// asap scheduler is the old default scheduler
 
 // this is a really hacky way of detecting if we're running in the
 // context of a unit test runner
@@ -47,11 +41,9 @@ export class ReactiveApp {
 
   public static mainScheduler = new Lazy(() => ReactiveApp.createMainScheduler(), true);
 
-  private static createMainScheduler() {
-    // NOTE: The queue scheduler is the currentThread scheduler
-    // NOTE: The asap scheduler is the default scheduler
-    return ReactiveApp.isUnitTestRunner.value === true ?
-      <QueueScheduler>Scheduler.queue :
-      <AsapScheduler>Scheduler.asap;
+  private static createMainScheduler(): Scheduler {
+    // null scheduler is the old immediate scheduler
+    // queue scheduler is the old currentThread scheduler
+    return ReactiveApp.isUnitTestRunner.value === true ? null : Schedulers.queue;
   }
 }

@@ -1,108 +1,66 @@
-import './setup';
+import { should } from './setup';
 import { ScheduledSubject } from '../src/ScheduledSubject';
-import { ReactiveApp } from '../src/ReactiveApp';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { Scheduler, BehaviorSubject, TestScheduler } from 'rxjs';
 
-describe('ScheduledSubject', () => {
-  describe('next', () => {
-    it('passes calls to internal subject', () => {
-      const subject = new BehaviorSubject(0);
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
+describe.only('ScheduledSubject', () => {
+  it('is a Subject', () => {
+    const subject = new ScheduledSubject<number>();
+    const result = new BehaviorSubject(0);
 
-      ss.next(1);
-      subject.value.should.eql(1);
-    });
+    subject.subscribe(result);
+    result.value.should.eql(0);
+
+    subject.next(1);
+    result.value.should.eql(1);
   });
 
-  describe('error', () => {
-    it('passes calls to internal subject', (done) => {
-      const subject = new BehaviorSubject(0);
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
+  it('supports a default subject observer', () => {
+    const result = new BehaviorSubject(0);
+    const subject = new ScheduledSubject<number>(undefined, result);
 
-      ss.subscribe(() => null, x => {
+    result.value.should.eql(0);
+
+    subject.next(1);
+    result.value.should.eql(1);
+  });
+
+  it('supports a default function observer', () => {
+    const result = new BehaviorSubject(0);
+    const subject = new ScheduledSubject<number>(undefined, x => result.next(x));
+
+    result.value.should.eql(0);
+
+    subject.next(1);
+    result.value.should.eql(1);
+  });
+
+  it('supports overriding the default function observer');
+  it('supports restoring the default function observer');
+
+  it('can be scheduled');
+
+  it.only('test', (done) => {
+    // const scheduler = new TestScheduler((a, b) => {
+    //   debugger;
+    //   a.should.eql(b);
+    // });
+    const scheduler = Scheduler.asap;
+    const subject = new ScheduledSubject<number>(scheduler);
+    const result = new BehaviorSubject(0);
+
+    subject.subscribe(result);
+    result.value.should.eql(0);
+
+    subject.next(1);
+    result.value.should.eql(0);
+
+    result
+      .skip(1)
+      .take(1)
+      .subscribe(x => {
+        debugger;
         x.should.eql(1);
-
-        subject.hasError.should.be.true;
-
         done();
       });
-
-      ss.error(1);
-    });
-  });
-
-  describe('complete', () => {
-    it('passes calls to internal subject', (done) => {
-      const subject = new BehaviorSubject(0);
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, null, subject);
-
-      ss.subscribe(() => null, () => null, () => {
-        done();
-      });
-
-      ss.complete();
-    });
-  });
-
-  describe('subscribe', () => {
-    it('unsubscribes the default observer', () => {
-      const subject1 = new BehaviorSubject(0);
-      const subject2 = new BehaviorSubject(0);
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, subject1);
-
-      ss.next(1);
-      subject1.value.should.eql(1);
-
-      ss.subscribe(subject2);
-
-      ss.next(2);
-      subject1.value.should.eql(1);
-      subject2.value.should.eql(2);
-    });
-
-    it('re-subscribes the default observer', () => {
-      const subject1 = new BehaviorSubject(0);
-      const subject2 = new BehaviorSubject(0);
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, subject1);
-
-      ss.next(1);
-      subject1.value.should.eql(1);
-
-      Observable.using(
-        () => ss.subscribe(subject2),
-        x => {
-          ss.next(2);
-          subject1.value.should.eql(1);
-          subject2.value.should.eql(2);
-
-          x.unsubscribe();
-        }
-      ).subscribe();
-
-      ss.next(3);
-      subject1.value.should.eql(3);
-      subject2.value.should.eql(2);
-    });
-  });
-
-  describe('unsubscribe', () => {
-    it('closes the subscription', () => {
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler);
-
-      ss.closed.should.be.false;
-
-      ss.unsubscribe();
-      ss.closed.should.be.true;
-    });
-
-    it('unsubscribes the internal subject', () => {
-      const subject = new Subject();
-      const ss = new ScheduledSubject(ReactiveApp.mainScheduler, undefined, subject);
-
-      subject.closed.should.be.false;
-
-      ss.unsubscribe();
-      subject.closed.should.be.true;
-    });
   });
 });

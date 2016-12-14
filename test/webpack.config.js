@@ -4,7 +4,8 @@ const webpackCommon = require('../webpack.common');
 
 const coverageVariable = '__coverage__';
 
-const atl = `awesome-typescript?${ JSON.stringify({ sourceMap: false, inlineSourceMap: true }) }`;
+// const atl = `awesome-typescript?${ JSON.stringify({ sourceMap: false, inlineSourceMap: true }) }`;
+const atl = 'awesome-typescript';
 
 const webpackConfig = Object.assign(clone(webpackCommon), {
   devtool: 'inline-source-map',
@@ -20,15 +21,15 @@ const webpackConfig = Object.assign(clone(webpackCommon), {
     loaders: [
       { test: /\.ts$/, loader: atl },
     ],
-    postLoaders: [
-      {
-        test: /\.ts$/,
-        loader: `istanbul-instrumenter?coverageVariable=${ coverageVariable }`,
-        include: [
-          path.resolve('src'),
-        ],
-      },
-    ],
+    // postLoaders: [
+    //   {
+    //     test: /\.ts$/,
+    //     loader: `istanbul-instrumenter?coverageVariable=${ coverageVariable }`,
+    //     include: [
+    //       path.resolve('src'),
+    //     ],
+    //   },
+    // ],
   },
 });
 

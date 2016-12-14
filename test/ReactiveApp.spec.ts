@@ -6,17 +6,17 @@ import { ReactiveApp } from '../src/ReactiveApp';
 
 describe('ReactiveApp', () => {
   describe('isUnitTestRunner', () => {
-    it('should be true', () => {
+    it('is true', () => {
       ReactiveApp.isUnitTestRunner.value.should.be.true;
     });
   });
 
   describe('defaultErrorHandler', () => {
-    it('should be initialized by default', () => {
+    it('is non-null', () => {
       should.exist(ReactiveApp.defaultErrorHandler);
     });
 
-    it('should use console.error by default', () => {
+    it('emits errors to console.error', () => {
       const stub = sandbox.stub(console, 'error');
       const err = new Error('testing');
 
@@ -24,10 +24,9 @@ describe('ReactiveApp', () => {
 
       stub.callCount.should.eql(1);
       stub.calledWith(err);
-      sandbox.restore();
     });
 
-    it('should be extensible with a new subscriber', () => {
+    it('is replaceable with a new subscriber', () => {
       const stub = sinon.stub();
 
       ReactiveApp.defaultErrorHandler = Subscriber.create(stub);
@@ -41,17 +40,13 @@ describe('ReactiveApp', () => {
   });
 
   describe('mainScheduler', () => {
-    it('should be initialize by default', () => {
-      should.exist(ReactiveApp.mainScheduler);
+    it('is the null scheduler', () => {
+      should.not.exist(ReactiveApp.mainScheduler.value);
     });
 
-    it('should be the queue scheduler for a unit test context', () => {
-      ReactiveApp.mainScheduler.value.should.equal(Scheduler.queue);
-    });
-
-    it('is the asap scheduler outside of a unit test context', () => {
+    it('is the queue scheduler outside of a unit test context', () => {
       sandbox.stub(ReactiveApp, 'isUnitTestRunner', false);
-      (<any>ReactiveApp).createMainScheduler().should.equal(Scheduler.asap);
+      ReactiveApp.mainScheduler.value.should.equal(Scheduler.queue);
     });
   });
 });
