@@ -3,11 +3,13 @@ import { Scheduler } from 'rxjs/Scheduler';
 import { ScheduledSubject } from './ScheduledSubject';
 import { ReactiveApp } from './ReactiveApp';
 import { ReactiveEvent } from './ReactiveEvent';
+import './augmentations/add/PausableBuffer';
 
 export type AnyReactiveState = ReactiveState<any, any, any>;
 export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
 
 function dedup<T extends AnyReactiveEvent>(batch: T[]) {
+  debugger;
   if (batch.length <= 1) {
     return batch;
   }
@@ -36,10 +38,10 @@ function dedup<T extends AnyReactiveEvent>(batch: T[]) {
       .forEach((x, i) => {
         // console.log(`x = ${ x }, last = ${ last || 'NULL' }, ${ x !== last }`);
 
-        if (i === 0) {
+        if (last == null) {
           result.push(x);
         }
-        else if (x !== last) {
+        else if (x.value != last.value) {
           result.push(x);
         }
 

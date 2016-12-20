@@ -3,7 +3,7 @@ import { should } from './setup';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ReactiveCommand } from '../src/ReactiveCommand';
 
-describe('ReactiveCommand', () => {
+describe.only('ReactiveCommand', () => {
   const testOwner = new Object();
 
   describe('value', () => {

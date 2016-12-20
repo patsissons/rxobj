@@ -377,28 +377,28 @@ gulp.task('watch:mocha', [ 'clean:build' ], (done) => {
       gulp
         .src(file.path, { read: false })
         .pipe(plumber())
-        .pipe(mocha({ reporter }))
-        .pipe(istanbul.writeReports({
-          coverageVariable: webpackTestConfig.coverageVariable,
-          reporters: [ 'lcov', 'json', 'html' ],
-        }))
-        .on('end', () => {
-          log('Remapping istanbul coverage results to typescript files...');
+        .pipe(mocha({ reporter }));
+        // .pipe(istanbul.writeReports({
+        //   coverageVariable: webpackTestConfig.coverageVariable,
+        //   reporters: [ 'lcov', 'json', 'html' ],
+        // }))
+        // .on('end', () => {
+        //   log('Remapping istanbul coverage results to typescript files...');
 
-          gulp
-            .src([
-              path.resolve(config.paths.coverage, config.files.coverage),
-            ])
-            .pipe(remapIstanbul({
-              reports: {
-                'json': path.resolve(config.paths.coverage, config.files.coverage),
-                'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
-                'html': path.resolve(config.paths.coverage, 'lcov-report'),
-                'text-summary': null,
-              },
-              fail: true,
-            }));
-        });
+        //   gulp
+        //     .src([
+        //       path.resolve(config.paths.coverage, config.files.coverage),
+        //     ])
+        //     .pipe(remapIstanbul({
+        //       reports: {
+        //         'json': path.resolve(config.paths.coverage, config.files.coverage),
+        //         'lcovonly': path.resolve(config.paths.coverage, 'lcov.info'),
+        //         'html': path.resolve(config.paths.coverage, 'lcov-report'),
+        //         'text-summary': null,
+        //       },
+        //       fail: true,
+        //     }));
+        // });
     }));
 });
 

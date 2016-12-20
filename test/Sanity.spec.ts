@@ -1,5 +1,5 @@
 import { should, sandbox } from './setup';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, TestScheduler } from 'rxjs';
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {
@@ -42,6 +42,17 @@ describe('Sanity Tests', () => {
   });
 
   describe('for rxjs', () => {
+    it('can schedule observables', () => {
+      const result = new BehaviorSubject(0);
+      const scheduler = new TestScheduler(null);
+
+      Observable.of(1).observeOn(scheduler).subscribe(result);
+      result.value.should.eql(0);
+
+      scheduler.flush();
+      result.value.should.eql(1);
+    });
+
     it('can simulate time for long running observables', (done) => {
       const timer = sandbox.useFakeTimers();
 
