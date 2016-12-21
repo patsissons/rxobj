@@ -3,7 +3,7 @@ import { PartialObserver } from 'rxjs/Observer';
 import { Scheduler } from 'rxjs/Scheduler';
 import { Subscription } from 'rxjs/Subscription';
 import { ReactiveEvent } from './ReactiveEvent';
-import { ReactiveState } from './ReactiveState';
+import { ReactiveState, Comparable } from './ReactiveState';
 import { ScheduledSubject } from './ScheduledSubject';
 
 export interface ReactiveCommandEventValue<TParam, TResult> {
@@ -16,6 +16,15 @@ enum ExecutionDemarcation {
   EndWithResult,
   EndWithError,
   Ended,
+}
+
+class ComparableReactiveCommandEventValue<TParam, TResult> implements ReactiveCommandEventValue<TParam, TResult>, Comparable<ComparableReactiveCommandEventValue<TParam, TResult>> {
+  constructor(public param: TParam, public result: TResult = null) {
+  }
+
+  equals(other: ComparableReactiveCommandEventValue<TParam, TResult>) {
+    return this.param === other.param && this.result === other.result;
+  }
 }
 
 class ExecutionState<TParam, TResult> {
@@ -65,9 +74,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
     this.add(
       this.executionStateSubject
         .filter(x => x.demarcation === ExecutionDemarcation.Begin)
-        .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
-          param: x.param,
-        }))
+        .map(x => new ReactiveEvent(this, new ComparableReactiveCommandEventValue<TParam, TResult>(x.param)))
         .subscribe(x => {
           this.notifyPropertyChanging(() => x);
         }, this.thrownErrorsHandler.next)
@@ -76,10 +83,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
     this.add(
       this.executionStateSubject
         .filter(x => x.demarcation === ExecutionDemarcation.EndWithResult)
-        .map(x => new ReactiveEvent(this, <ReactiveCommandEventValue<TParam, TResult>>{
-          param: x.param,
-          result: x.result,
-        }))
+        .map(x => new ReactiveEvent(this, new ComparableReactiveCommandEventValue<TParam, TResult>(x.param, x.result)))
         .subscribe(x => {
           this.notifyPropertyChanged(() => x);
         }, this.thrownErrorsHandler.next)

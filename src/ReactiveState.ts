@@ -8,6 +8,14 @@ import './augmentations/add/PausableBuffer';
 export type AnyReactiveState = ReactiveState<any, any, any>;
 export type AnyReactiveEvent = ReactiveEvent<AnyReactiveState, any>;
 
+export interface Comparable<T> {
+  equals(other: T): boolean;
+}
+
+export function isComparable(value: any): value is Comparable<any> {
+  return value != null && (<Comparable<any>>value).equals instanceof Function;
+}
+
 function dedup<T extends AnyReactiveEvent>(batch: T[]) {
   debugger;
   if (batch.length <= 1) {
@@ -35,13 +43,19 @@ function dedup<T extends AnyReactiveEvent>(batch: T[]) {
 
     // dedup based on the member value
     batch
-      .forEach((x, i) => {
-        // console.log(`x = ${ x }, last = ${ last || 'NULL' }, ${ x !== last }`);
-
+      .forEach(x => {
         if (last == null) {
+          // always add the first event
           result.push(x);
         }
-        else if (x.value != last.value) {
+        else if (isComparable(x.value)) {
+          // if we have complex values and they are comparable but not equal, then add the event
+          if (isComparable(last.value) && x.value.equals(last.value) === false) {
+            result.push(x);
+          }
+        }
+        else if(x !== last) {
+          // if we have simple values and they aren't the same, then add the event
           result.push(x);
         }
 
