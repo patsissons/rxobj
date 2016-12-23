@@ -1,4 +1,4 @@
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, Subscriber } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
@@ -37,7 +37,7 @@ export class ReactiveProperty<TObject, TValue> extends ReactiveState<TObject, TV
           oldValue,
           newValue,
         }));
-      }, this.thrownErrorsHandler.next)
+      }, err => this.thrownErrorsHandler.next(err))
     );
   }
 

@@ -3,7 +3,7 @@ import { should } from './setup';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ReactiveCommand } from '../src/ReactiveCommand';
 
-describe.only('ReactiveCommand', () => {
+describe('ReactiveCommand', () => {
   const testOwner = new Object();
 
   describe('value', () => {
@@ -114,12 +114,12 @@ describe.only('ReactiveCommand', () => {
 
     it('handles errors', () => {
       const errors = new BehaviorSubject<Error>(null);
-      const canExecute = Observable.throw<boolean>('test').publish();
+      const canExecute = Observable.throw('test').publish();
       const cmd = new ReactiveCommand(testOwner, x => {
         return Observable.of(true);
       }, canExecute);
 
-      cmd.thrownErrors.asObservable().subscribe(errors);
+      cmd.thrownErrors.subscribe(errors);
 
       canExecute.connect();
 
@@ -315,35 +315,37 @@ describe.only('ReactiveCommand', () => {
   });
 
   describe('delayChangeNotifications', () => {
-    it.only('de-duplicates consecutive identical values', (done) => {
+    it('de-duplicates consecutive identical values', () => {
       const cmd = new ReactiveCommand(testOwner, (x: number) => {
         return Observable.of(x);
       });
-      const subject = new BehaviorSubject<number[]>(null);
+      const results = new BehaviorSubject<number[]>(null);
       const end = new Subject();
 
       cmd.changed
         .map(x => x.value.result)
         .takeUntil(end)
         .toArray()
-        .subscribe(subject);
+        .subscribe(results);
 
       Observable.using(
         () => cmd.delayChangeNotifications(),
         x => {
-          cmd.executeNow(1);
-          cmd.executeNow(1);
-          cmd.executeNow(2);
-          cmd.executeNow(2);
-          cmd.executeNow(2);
-          cmd.executeNow(1);
-
-          x.unsubscribe();
-
-          end.next();
-          subject.value.should.eql([ 1, 2, 1 ]);
+          return Observable
+            .combineLatest(
+              cmd.execute(1),
+              cmd.execute(1),
+              cmd.execute(2),
+              cmd.execute(2),
+              cmd.execute(2),
+              cmd.execute(1),
+            );
         }
-      ).subscribe(done);
+      ).subscribe();
+
+      end.next();
+      should.exist(results.value);
+      results.value.should.eql([ 1, 2, 1 ]);
     });
   });
 });

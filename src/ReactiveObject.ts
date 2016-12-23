@@ -56,14 +56,14 @@ export class ReactiveObject extends ReactiveState<ReactiveObject, ReactiveObject
       member.changing
         .subscribe(x => {
           this.notifyPropertyChanging(() => new ReactiveEvent(this, this.getMember(x)));
-        }, this.thrownErrorsHandler.next)
+        }, err => this.thrownErrorsHandler.next(err))
     );
 
     this.add(
       member.changed
         .subscribe(x => {
           this.notifyPropertyChanged(() => new ReactiveEvent(this, this.getMember(x)));
-        }, this.thrownErrorsHandler.next)
+        }, err => this.thrownErrorsHandler.next(err))
     );
 
     this.add(member);

@@ -58,8 +58,8 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
       .refCount();
 
     this.canExecuteObservable = canExecute
-      .catch(e => {
-        this.thrownErrorsHandler.next(e);
+      .catch(err => {
+        this.thrownErrorsHandler.next(err);
         return Observable.of(false);
       })
       .startWith(false)
@@ -77,7 +77,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
         .map(x => new ReactiveEvent(this, new ComparableReactiveCommandEventValue<TParam, TResult>(x.param)))
         .subscribe(x => {
           this.notifyPropertyChanging(() => x);
-        }, this.thrownErrorsHandler.next)
+        }, err => this.thrownErrorsHandler.next(err))
     );
 
     this.add(
@@ -86,7 +86,7 @@ export class ReactiveCommand<TObject, TParam, TResult> extends ReactiveState<TOb
         .map(x => new ReactiveEvent(this, new ComparableReactiveCommandEventValue<TParam, TResult>(x.param, x.result)))
         .subscribe(x => {
           this.notifyPropertyChanged(() => x);
-        }, this.thrownErrorsHandler.next)
+        }, err => this.thrownErrorsHandler.next(err))
     );
   }
 

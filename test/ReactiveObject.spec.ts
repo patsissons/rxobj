@@ -174,7 +174,30 @@ describe('ReactiveObject', () => {
   });
 
   describe('thrownErrors', () => {
-    it('emits thrown errors from registered members');
+    class TestObject extends BasicReactiveObject {
+      public valueProp = this.property<number>();
+    }
+
+    it.only('emits thrown errors from registered members', () => {
+      const obj = new TestObject();
+      const result = new BehaviorSubject<any>(null);
+      obj.changed.subscribe(x => {
+        if (x.value.value === 1) {
+          throw 'testing';
+        }
+      });
+
+      obj.thrownErrors.subscribe(result);
+
+      should.not.exist(result.value);
+
+      obj.valueProp.value = 0;
+      should.not.exist(result.value);
+
+      obj.valueProp.value = 1;
+      should.exist(result.value);
+      result.value.should.eql('testing');
+    });
   });
 
   describe('value', () => {
@@ -229,10 +252,13 @@ describe('ReactiveObject', () => {
         () => obj.delayChangeNotifications(),
         x => {
           obj.prop1.value = 1;
-          obj.prop2.value = 2;
-          obj.prop1.value = 3;
+          obj.prop1.value = 2;
+          obj.prop2.value = 3;
+          obj.prop2.value = 4;
+          obj.prop2.value = 5;
+          obj.prop1.value = 6;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -256,10 +282,13 @@ describe('ReactiveObject', () => {
         () => obj.delayChangeNotifications(),
         x => {
           obj.prop1.value = 1;
-          obj.prop2.value = 2;
-          obj.prop1.value = 3;
+          obj.prop1.value = 2;
+          obj.prop2.value = 3;
+          obj.prop2.value = 4;
+          obj.prop2.value = 5;
+          obj.prop1.value = 6;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -284,7 +313,7 @@ describe('ReactiveObject', () => {
         x => {
           obj.prop1.value = 1;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -311,7 +340,7 @@ describe('ReactiveObject', () => {
         x => {
           obj.prop1.value = 1;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -334,7 +363,7 @@ describe('ReactiveObject', () => {
       Observable.using(
         () => obj.delayChangeNotifications(),
         x => {
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 

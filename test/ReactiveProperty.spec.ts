@@ -171,7 +171,7 @@ describe('ReactiveProperty', () => {
         x => {
           prop.areChangeNotificationsEnabled().should.be.false;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -194,7 +194,7 @@ describe('ReactiveProperty', () => {
         x => {
           prop.areChangeNotificationsDelayed().should.be.true;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -228,7 +228,7 @@ describe('ReactiveProperty', () => {
           subject.value.oldValue.should.eql(0);
           subject.value.newValue.should.eql(1);
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -264,14 +264,14 @@ describe('ReactiveProperty', () => {
               subject.value.oldValue.should.eql(0);
               subject.value.newValue.should.eql(1);
 
-              sub2.unsubscribe();
+              return Observable.empty();
             }
           ).subscribe();
 
           subject.value.oldValue.should.eql(0);
           subject.value.newValue.should.eql(1);
 
-          sub1.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -306,7 +306,7 @@ describe('ReactiveProperty', () => {
           subject.value.oldValue.should.eql(0);
           subject.value.newValue.should.eql(1);
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -335,7 +335,7 @@ describe('ReactiveProperty', () => {
           prop.value = 2;
           prop.value = 1;
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
@@ -380,14 +380,14 @@ describe('ReactiveProperty', () => {
               subject.value.oldValue.should.eql(0);
               subject.value.newValue.should.eql(1);
 
-              sub2.unsubscribe();
+              return Observable.empty();
             }
           ).subscribe();
 
           subject.value.oldValue.should.eql(0);
           subject.value.newValue.should.eql(1);
 
-          sub1.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
     });

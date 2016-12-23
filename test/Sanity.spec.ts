@@ -1,5 +1,5 @@
 import { should, sandbox } from './setup';
-import { Observable, BehaviorSubject, TestScheduler } from 'rxjs';
+import { Observable, BehaviorSubject, TestScheduler, Subscription } from 'rxjs';
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {
@@ -42,6 +42,25 @@ describe('Sanity Tests', () => {
   });
 
   describe('for rxjs', () => {
+    it('using operator unsubscribes the subscription', () => {
+      let disposed = false;
+      let used = false;
+      Observable
+        .using(
+          () => new Subscription(() => disposed = true),
+          x => {
+            used = true;
+
+            // you must return an observable for the subscription to be automatically disposed
+            return Observable.empty();
+          },
+        )
+        .subscribe();
+
+      should.equal(used, true, 'using block not executed');
+      should.equal(disposed, true, 'using resource not disposed');
+    });
+
     it('can schedule observables', () => {
       const result = new BehaviorSubject(0);
       const scheduler = new TestScheduler(null);

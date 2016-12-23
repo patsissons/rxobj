@@ -17,7 +17,6 @@ export function isComparable(value: any): value is Comparable<any> {
 }
 
 function dedup<T extends AnyReactiveEvent>(batch: T[]) {
-  debugger;
   if (batch.length <= 1) {
     return batch;
   }
@@ -73,7 +72,7 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
     this.startDelayNotificationsSubject = new Subject<any>();
     this.changingSubject = new ScheduledSubject<ReactiveEvent<this, TEventValue>>(scheduler);
     this.changedSubject = new ScheduledSubject<ReactiveEvent<this, TEventValue>>(scheduler);
-    this.thrownErrorsHandler = new ScheduledSubject<Error>(errorScheduler, ReactiveApp.defaultErrorHandler.next);
+    this.thrownErrorsHandler = new ScheduledSubject<Error>(errorScheduler, err => ReactiveApp.defaultErrorHandler.next(err));
 
     this.add(this.startDelayNotificationsSubject);
     this.add(this.changingSubject);
@@ -180,7 +179,7 @@ export abstract class ReactiveState<TObject, TValue, TEventValue> extends Subscr
     return this.changedObservable;
   }
 
-  public get thrownErrors() {
+  public get thrownErrors(): Observable<Error> {
     return this.thrownErrorsHandler;
   }
 

@@ -1,6 +1,6 @@
 import { should, subscribeNotCalledError } from './setup';
 
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ReactiveList, ReactiveListChangeAction } from '../src/ReactiveList';
 
 describe('ReactiveList', () => {
@@ -259,53 +259,41 @@ describe('ReactiveList', () => {
           list.push(testValue);
           subject.value.should.eql(1);
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
       subject.value.should.eql(1);
+
+      list.push(testValue);
+      subject.value.should.eql(4);
     });
   });
 
   describe('delayChangeNotifications', () => {
-    it('delays list modifications until disabled', (done) => {
+    it('delays list modification notifications until disabled', () => {
       const emptyArray = <string[]>[];
       const list = new ReactiveList(testOwner, emptyArray);
-      const subject = new BehaviorSubject<number>(0);
-      let error = subscribeNotCalledError;
+      const results = new BehaviorSubject<number>(0);
 
       list.changed
         .map(x => x.source.length)
-        .subscribe(subject);
-
-      subject.value.should.eql(0);
-
-      list.push(testValue);
-      subject.value.should.eql(1);
-
-      const sub = subject
-        .map((length, i) => ({ length, i }))
-        .filter(x => x.i === 2)
-        .finally(() => done(error))
-        .subscribe(x => {
-          error = null;
-          x.length.should.eql(3);
-        });
+        .subscribe(results);
 
       Observable.using(
         () => list.delayChangeNotifications(),
         x => {
           list.push(testValue);
-          subject.value.should.eql(1);
+          results.value.should.eql(0);
 
           list.push(testValue);
-          subject.value.should.eql(1);
+          results.value.should.eql(0);
 
-          x.unsubscribe();
+          return Observable.empty();
         }
       ).subscribe();
 
-      sub.unsubscribe();
+      results.value.should.eql(2);
     });
   });
 

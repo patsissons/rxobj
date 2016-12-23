@@ -33,7 +33,7 @@ export class SearchViewModel extends ReactiveObject {
     );
 
     this
-      .whenAnyObservable(x => x.search.thrownErrors.asObservable(), x => x)
+      .whenAnyObservable(x => x.search.thrownErrors, x => x)
       .subscribe(this.thrownErrorsHandler.next);
 
     this
