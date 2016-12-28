@@ -1,6 +1,7 @@
+import { BehaviorSubject, TestScheduler } from 'rxjs';
+
 import { should } from './setup';
 import { ScheduledSubject } from '../src/ScheduledSubject';
-import { BehaviorSubject, TestScheduler } from 'rxjs';
 
 describe('ScheduledSubject', () => {
   it('is a Subject', () => {

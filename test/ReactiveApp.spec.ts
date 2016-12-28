@@ -1,7 +1,6 @@
-import * as sinon from 'sinon';
-import { should, sandbox } from './setup';
-
 import { Subscriber, Scheduler } from 'rxjs';
+
+import { should, sinon, sandbox } from './setup';
 import { ReactiveApp } from '../src/ReactiveApp';
 
 describe('ReactiveApp', () => {

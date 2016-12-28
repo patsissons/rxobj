@@ -1,5 +1,6 @@
-import { subscribeNotCalledError } from '../setup';
 import { Observable, Subject } from 'rxjs';
+
+import { subscribeNotCalledError } from '../setup';
 import { SearchService, SearchViewModel } from './Search';
 
 describe('Search Example', () => {

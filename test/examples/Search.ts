@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+
 import { ReactiveObject, ReactiveProperty, ReactiveCommand, ReactiveList } from '../../src/rxobj';
 
 export interface SearchService {

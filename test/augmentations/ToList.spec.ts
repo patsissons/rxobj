@@ -1,5 +1,4 @@
 import { should } from '../setup';
-
 import { ReactiveObject } from '../../src/ReactiveObject';
 import '../../src/augmentations/add/ToList';
 

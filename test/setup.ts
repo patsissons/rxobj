@@ -4,6 +4,10 @@ import * as sinonChai from 'sinon-chai';
 
 import 'es6-shim';
 
+const subscribeNotCalledError = new Error('Subscribe not called');
+const should = chai.should();
+let sandbox: sinon.SinonSandbox;
+
 chai.use(sinonChai);
 
 beforeEach(() => {
@@ -14,8 +18,4 @@ afterEach(() => {
   sandbox.restore();
 });
 
-export const subscribeNotCalledError = new Error('Subscribe not called');
-
-export const should = chai.should();
-
-export let sandbox: sinon.SinonSandbox;
+export { should, sinon, sandbox, subscribeNotCalledError };

@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
+
 import { ReactiveObject, ReactiveObjectType, registerMember } from '../../ReactiveObject';
 import { ReactiveProperty } from '../../ReactiveProperty';
 

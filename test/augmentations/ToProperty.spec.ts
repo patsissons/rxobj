@@ -1,6 +1,6 @@
-import { should } from '../setup';
-
 import { Observable } from 'rxjs';
+
+import { should } from '../setup';
 import { ReactiveObject } from '../../src/ReactiveObject';
 import '../../src/augmentations/add/ToProperty';
 

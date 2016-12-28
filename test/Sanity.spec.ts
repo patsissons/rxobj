@@ -1,5 +1,6 @@
-import { should, sandbox } from './setup';
 import { Observable, BehaviorSubject, TestScheduler, Subscription } from 'rxjs';
+
+import { should, sinon, sandbox } from './setup';
 
 describe('Sanity Tests', () => {
   describe('for mocha', () => {
@@ -20,10 +21,23 @@ describe('Sanity Tests', () => {
 
   describe('for sinon', () => {
     it('can create stubs', () => {
+      const stub = sinon.stub();
+
+      should.exist(stub);
+      should.exist(stub.callCount);
+      stub.callCount.should.eql(0);
+
+      stub();
+
+      stub.callCount.should.eql(1);
+    });
+
+    it('can create sandbox stubs', () => {
       const stub = sandbox.stub();
 
       should.exist(stub);
       should.exist(stub.callCount);
+      stub.callCount.should.eql(0);
 
       stub();
 
@@ -43,11 +57,19 @@ describe('Sanity Tests', () => {
 
   describe('for rxjs', () => {
     it('using operator unsubscribes the subscription', () => {
-      let disposed = false;
+      let initialized = false;
       let used = false;
+      let disposed = false;
+
       Observable
         .using(
-          () => new Subscription(() => disposed = true),
+          () => {
+            initialized = true;
+
+            return new Subscription(() => {
+              disposed = true;
+            });
+          },
           x => {
             used = true;
 
@@ -57,6 +79,7 @@ describe('Sanity Tests', () => {
         )
         .subscribe();
 
+      should.equal(initialized, true, 'using block did not initialize the subscription');
       should.equal(used, true, 'using block not executed');
       should.equal(disposed, true, 'using resource not disposed');
     });

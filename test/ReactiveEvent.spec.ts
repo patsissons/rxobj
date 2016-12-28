@@ -1,5 +1,4 @@
 import './setup';
-
 import { ReactiveEvent } from '../src/ReactiveEvent';
 
 describe('ReactiveEvent', () => {

@@ -1,6 +1,6 @@
-import { should } from './setup';
-
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
+
+import { should } from './setup';
 import { ReactiveObject, registerMember } from '../src/ReactiveObject';
 
 describe('ReactiveObject', () => {
@@ -178,7 +178,7 @@ describe('ReactiveObject', () => {
       public valueProp = this.property<number>();
     }
 
-    it.only('emits thrown errors from registered members', () => {
+    it('emits thrown errors from registered members', () => {
       const obj = new TestObject();
       const result = new BehaviorSubject<any>(null);
       obj.changed.subscribe(x => {

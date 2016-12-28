@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs/Observable';
+
 import { toProperty, ToPropertySignature } from '../operators/ToProperty';
 
 Observable.prototype.toProperty = toProperty;

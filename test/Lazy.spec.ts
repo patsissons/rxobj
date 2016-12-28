@@ -1,5 +1,4 @@
 import { should, sandbox } from './setup';
-
 import { Lazy } from '../src/Lazy';
 
 describe('Lazy', () => {

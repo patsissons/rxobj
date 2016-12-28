@@ -1,6 +1,6 @@
-import { should, subscribeNotCalledError } from './setup';
-
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
+
+import { should, subscribeNotCalledError } from './setup';
 import { ReactiveProperty, ReactivePropertyEventValue } from '../src/ReactiveProperty';
 
 describe('ReactiveProperty', () => {

@@ -1,5 +1,6 @@
-import { Observable, Subject, Subscriber } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
+
 import { ReactiveEvent } from './ReactiveEvent';
 import { ReactiveState } from './ReactiveState';
 

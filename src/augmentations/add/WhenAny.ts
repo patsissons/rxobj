@@ -1,4 +1,5 @@
 import { ReactiveObject } from '../../ReactiveObject';
+
 import { whenAnyObservable, whenAnyState, whenAnyValue, WhenAnyObservableSignature, WhenAnyStateSignature, WhenAnyValueSignature } from '../operators/WhenAny';
 
 ReactiveObject.prototype.whenAnyObservable = <any>whenAnyObservable;

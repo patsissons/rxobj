@@ -2,7 +2,7 @@ import './Sanity.spec';
 import './Lazy.spec';
 import './ScheduledSubject.spec';
 import './ReactiveApp.spec';
-// import './ReactiveState.spec';
+import './ReactiveState.spec';
 import './ReactiveEvent.spec';
 import './ReactiveProperty.spec';
 import './ReactiveCommand.spec';

@@ -1,6 +1,6 @@
-import { should } from './setup';
-
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
+
+import { should } from './setup';
 import { ReactiveCommand } from '../src/ReactiveCommand';
 
 describe('ReactiveCommand', () => {

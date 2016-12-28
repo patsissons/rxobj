@@ -1,6 +1,6 @@
-import '../setup';
-
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
+
+import '../setup';
 import '../../src/augmentations/add/PausableBuffer';
 
 describe('PausableBuffer', () => {

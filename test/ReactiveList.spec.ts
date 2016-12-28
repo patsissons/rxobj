@@ -1,6 +1,6 @@
-import { should, subscribeNotCalledError } from './setup';
+import { Observable, BehaviorSubject } from 'rxjs';
 
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { should, subscribeNotCalledError } from './setup';
 import { ReactiveList, ReactiveListChangeAction } from '../src/ReactiveList';
 
 describe('ReactiveList', () => {
